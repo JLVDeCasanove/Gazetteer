@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8">
+
+    <title>Gazetteer</title>
+    <meta name="author" content="Joe de Casanove">
+    <meta name="description" content="a global gazetteer, map, atlas and encyclopedia">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+    <link href="./favicon.png" type="image/png" rel="icon">
+    <link href="./libs/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""/>
+    <link href="./libs/css/style.css" rel="stylesheet">
+
+  </head>
+
+  <body>
+    <div class ="container">
+        <div class="row">
+          <nav class="col navbar navbar-dark bg-primary">
+              <div class="nav-item dropdown">
+                <a href ="#" class="navbar-brand dropdown-toggle" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  Gazetteer
+                </a>
+                <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                  <a href="#" class="dropdown-item">About</a>
+                </div>
+              </div>
+
+              <select id="country-list" class="navbar-nav"></select>
+          </nav>
+        </div>
+        <!-- DON'T FORGET TO PUT IN A CREDIT FOR THE ICON <a href="https://www.flaticon.com/free-icons/earth" title="earth icons">Earth icons created by Freepik - Flaticon</a>  -->
+        
+        <div class="row">
+          <div class="col" id="map">
+
+          </div>
+        </div>
+
+    </div>
+
+    <div id="preloader"></div>
+
+    <script type="application/javascript" src="./libs/js/jquery-3.7.1.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""></script>
+    <script type="application/javascript" src="./libs/js/script.js"></script>
+
+  </body>
+
+</html>
