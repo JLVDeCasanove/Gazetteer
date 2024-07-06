@@ -13,7 +13,7 @@ $(window).on('load', function () {
 //initialise map and variables
 const map = L.map('map').fitWorld();
 let geojson;
-let currentTarget;
+let selectedCountry;
 
 //Add tile layer
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -22,40 +22,24 @@ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 }).addTo(map);
 
 
-//initilise country info controls
+//initilise country info pane controls
 const countryInfo = L.control();
 
 countryInfo.onAdd = function (map) {
     this._div = L.DomUtil.create('div', 'country-info');
-    this.update();
+    //this.update();
     return this._div;
 };
 
-//Get country info function
-const getCountryInfo = () => {
-    let props = {};
-    //ajax for flag
-    //name
-    props.name = currentTarget;
-    //ajax for capital
-    //ajax for currency
-    //ajax for current weather
-    //ajax for wiki links
-
-
-
-
-
-}
-
-//Method for updating info
+//Method for updating info pane
 countryInfo.update = function (props) {
-    this._div.innerHTML = '<h4>' + currentTarget + '</h4><br>' + '<p>' + props + '</p>';
+
+    const { iso_a2 } = props;
+    this._div.innerHTML = '<img src=https://flagsapi.com/' + iso_a2 + '/shiny/32.png>' + '<h4>' + iso_a2 + '</h4><br>';
 };
 
+//add info pane
 countryInfo.addTo(map);
-
-
 
 /*
 //Find location
@@ -95,13 +79,27 @@ const borderStyle = (feature) => {
     }
 };
 
-
 //Event Listeners
 
 //Selecting a country with the select box
 $('#country-list').on('change', (e) => {
-    const layer = e.target.value;
-    console.log(layer);
+    let layer;
+    map.eachLayer((l) => {
+        if (l.countryName === e.target.value) {
+            layer = l;
+        }
+    });
+
+    /* Not working
+    let layer;
+    map.eachLayer((l) => {
+        let { name } = l.feature.properties;
+        if (name === e.target.value) {
+            layer = l;
+        }
+    });
+    */
+
     handleSelectCountry(layer);
 });
 
@@ -113,11 +111,11 @@ const selectFeature = (e) => {
 
 //Country Selection Handler
 const handleSelectCountry = (layer) => {
-    console.log(layer);
-    //Get the name
-    currentTarget = layer.feature.properties.name;
+    //Set current target
+    selectedCountry = layer;
     //Update country info
-    countryInfo.update(layer.feature.properties);
+    const properties = layer.feature.properties;
+    countryInfo.update(properties);
     //Deselect current selected country
     map.eachLayer((l) => {
         if (l.isSelected) {
@@ -135,6 +133,11 @@ const handleSelectCountry = (layer) => {
     });
     //zoom to country
     map.fitBounds(layer.getBounds());
+    //update dropdown if needed
+    const countryName = selectedCountry.feature.properties.name;
+    if ($('#country-list').val() !== countryName) {
+        $('#country-list').val(countryName);
+    }
     layer.isSelected = true;
 };
 
@@ -162,13 +165,21 @@ const resetHighlight = (e) => {
     }
 }
 
-//tie functions to listeners
+//tie functions to listeners and add properties for info panel
 const onEachFeature = (feature, layer) => {
     layer.on({
         mouseover: highlightFeature,
         mouseout: resetHighlight,
         click: selectFeature
     });
+    //add name to top level object for dropdown accessibility
+    layer.countryName = layer.feature.properties.name;
+        
+        //ajax for capital
+        //ajax for currency
+        //ajax for current weather
+        //ajax for wiki links
+
 }
 
 //Adding GeoJSON borders and populating country list
@@ -193,9 +204,18 @@ $.ajax({
             //populate country list
             const countryList = mapData.features;
             countryList.forEach((country) => {
-                $('#country-list').append('<option value=\"' + country.properties + '\">' + country.properties.name + '</option>');
+                $('#country-list').append('<option value=\"' + country.properties.name + '\">' + country.properties.name + '</option>');
             });
 
+            //select first country
+            let firstLayer;
+            map.eachLayer((l) => {
+                if (l.countryName === 'United Kingdom') {
+                    firstLayer = l;
+                }
+            });
+
+            handleSelectCountry(firstLayer);
 
         } else {
             console.log('error');

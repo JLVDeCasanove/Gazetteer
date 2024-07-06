@@ -4,7 +4,7 @@
 
 	$executionStartTime = microtime(true);
 
-	$url='http://localhost:81/project1/libs/json/countryBorders.geo.json';
+	$url='https://flagsapi.com/' .  $_REQUEST['countryCode'] . '/shiny/32.png';
 
 	$ch = curl_init();
 	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
