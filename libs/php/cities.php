@@ -4,12 +4,13 @@
 
 	$executionStartTime = microtime(true);
 
-	$url='https://flagsapi.com/' .  $_REQUEST['countryCode'] . '/shiny/32.png';
+	$url='https://wft-geo-db.p.rapidapi.com/v1/geo/cities?types=CITY&countryIds=' . $_REQUEST['country'] . '&limit=8&sort=-population';
 
 	$ch = curl_init();
 	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 	curl_setopt($ch, CURLOPT_URL,$url);
+	curl_setopt($ch, CURLOPT_HTTPHEADER, ["x-rapidapi-host: wft-geo-db.p.rapidapi.com", "x-rapidapi-key: ea08f4cb49msh5b4eb1229a7b550p19fe48jsn418e52bf39b4"]);
 
 	$result=curl_exec($ch);
 

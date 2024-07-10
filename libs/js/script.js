@@ -14,6 +14,7 @@ $(window).on('load', function () {
 const map = L.map('map').fitWorld();
 let geojson;
 let selectedCountry;
+let cityLayer;
 
 //Add tile layer
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -27,19 +28,92 @@ const countryInfo = L.control();
 
 countryInfo.onAdd = function (map) {
     this._div = L.DomUtil.create('div', 'country-info');
-    //this.update();
     return this._div;
 };
 
 //Method for updating info pane
 countryInfo.update = function (props) {
+    const { iso_a2,
+            continent,    
+            capital,
+            area,
+            population
+        } = props;
 
-    const { iso_a2 } = props;
-    this._div.innerHTML = '<img src=https://flagsapi.com/' + iso_a2 + '/shiny/32.png>' + '<h4>' + iso_a2 + '</h4><br>';
+    this._div.innerHTML = '<img src=https://flagsapi.com/' + iso_a2 + '/shiny/64.png>'
+        + '<h4>' + iso_a2 + '</h4><br>'
+        + '<p>Continent: ' + continent + '</p>'
+        + '<p>Capital: ' + capital + '</p>'
+        + '<p>Area: ' + area + ' km&sup2;</p>'
+        + '<p>Population: ' + population + '</p>';
 };
+
+//get properties for info pane
+const getProps = async (layer) => {
+    //ajax for country info
+    await $.ajax({
+        url: "./libs/php/capitals.php",
+        type: 'POST',
+        dataType: 'json',
+        data: {
+            country: layer.feature.properties.iso_a2
+        },
+        success: function(result) {
+    
+            console.log(JSON.stringify(result));
+            
+            if (result.status.name == "ok") {
+                layer.feature.properties.continent = result.data.continentName;
+                layer.feature.properties.capital = result.data.capital;
+                layer.feature.properties.area = result.data.areaInSqKm;
+                layer.feature.properties.population = result.data.population;
+            } else {
+                console.log('error');
+            }
+        
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            console.log('POST request not fulfilled');
+        }
+    });
+
+    return layer.feature.properties;
+}
 
 //add info pane
 countryInfo.addTo(map);
+
+//Get city info
+const getCities = async (layer) => {
+    let cityArr = [];
+    await $.ajax({
+        url: "./libs/php/cities.php",
+        type: 'POST',
+        dataType: 'json',
+        data: {
+            country: layer.feature.properties.iso_a2
+        },
+        success: function(result) {
+    
+            console.log(JSON.stringify(result));
+            
+            if (result.status.name == "ok") {
+                cityArr = [];
+                result.data.data.forEach((city) => {
+                    cityArr.push(L.marker([city.latitude, city.longitude]).bindPopup(city.name));
+                })
+            } else {
+                console.log('error');
+            }
+        
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            console.log('POST request not fulfilled');
+        }
+    });
+    return cityArr;
+};
+
 
 /*
 //Find location
@@ -89,17 +163,6 @@ $('#country-list').on('change', (e) => {
             layer = l;
         }
     });
-
-    /* Not working
-    let layer;
-    map.eachLayer((l) => {
-        let { name } = l.feature.properties;
-        if (name === e.target.value) {
-            layer = l;
-        }
-    });
-    */
-
     handleSelectCountry(layer);
 });
 
@@ -110,12 +173,10 @@ const selectFeature = (e) => {
 };
 
 //Country Selection Handler
-const handleSelectCountry = (layer) => {
+const handleSelectCountry = async (layer) => {
     //Set current target
     selectedCountry = layer;
-    //Update country info
-    const properties = layer.feature.properties;
-    countryInfo.update(properties);
+
     //Deselect current selected country
     map.eachLayer((l) => {
         if (l.isSelected) {
@@ -123,7 +184,16 @@ const handleSelectCountry = (layer) => {
             l.isSelected = false;
         }
     });
-    //select the new country
+
+    if (cityLayer) {
+        cityLayer.removeFrom(map);
+    }
+
+    layer.isSelected = true;
+    //zoom to country
+    map.fitBounds(layer.getBounds());
+
+    //highlight the new country
     layer.setStyle({
         fillColor: '#31a354',
         weight: 5,
@@ -131,14 +201,22 @@ const handleSelectCountry = (layer) => {
         dashArray: '',
         fillOpacity: 0.7
     });
-    //zoom to country
-    map.fitBounds(layer.getBounds());
+
     //update dropdown if needed
-    const countryName = selectedCountry.feature.properties.name;
-    if ($('#country-list').val() !== countryName) {
-        $('#country-list').val(countryName);
+    const { name, iso_2 } = selectedCountry.feature.properties;
+    if ($('#country-list').val() !== name) {
+        $('#country-list').val(name);
     }
-    layer.isSelected = true;
+
+    //Update country info
+    //ADD LOADING SCREEN FOR DATA PANE
+    const props = await getProps(layer)
+        .then((props) => countryInfo.update(props));
+    
+    //adding cities
+    const cities = await getCities(layer)
+        .then((cities) => cityLayer = L.layerGroup(cities))
+        .then(() => cityLayer.addTo(map));
 };
 
 //Highting a country on mouseover
@@ -165,7 +243,7 @@ const resetHighlight = (e) => {
     }
 }
 
-//tie functions to listeners and add properties for info panel
+//tie functions to listeners
 const onEachFeature = (feature, layer) => {
     layer.on({
         mouseover: highlightFeature,
@@ -174,15 +252,11 @@ const onEachFeature = (feature, layer) => {
     });
     //add name to top level object for dropdown accessibility
     layer.countryName = layer.feature.properties.name;
-        
-        //ajax for capital
-        //ajax for currency
-        //ajax for current weather
-        //ajax for wiki links
-
 }
 
-//Adding GeoJSON borders and populating country list
+
+
+//Adding GeoJSON borders, populating country list
 
 $.ajax({
     url: "./libs/php/countries.php",
@@ -215,6 +289,7 @@ $.ajax({
                 }
             });
 
+            //select initial country
             handleSelectCountry(firstLayer);
 
         } else {
