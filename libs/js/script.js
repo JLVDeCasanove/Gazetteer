@@ -32,7 +32,7 @@ const handleSelectCountry = async (layer) => {
     selectedCountry = layer;
 
     //Deselect current selected country
-    map.eachLayer((l) => {
+    geojson.eachLayer((l) => {
         if (l.isSelected) {
             geojson.resetStyle(l);
             l.isSelected = false;
@@ -78,7 +78,6 @@ const handleSelectCountry = async (layer) => {
         .then((cities) => cityLayer = L.layerGroup(cities))
         .then(() => cityLayer.addTo(map));
 };
-
 
 //-----------------INFO PANE-----------------------------------------------
 
@@ -233,31 +232,6 @@ const handleShowPois = async (latitude, longitude, country) => {
         .then(() => poiLayer.addTo(map));
 }
 
-
-/*
-//Find location
-map.locate({setView: true, maxZoom: 16});
-
-//Found
-const onLocationFound = (e) => {
-    const radius = e.accuracy;
-
-    L.marker(e.latlng).addTo(map)
-        .bindPopup("You are within " + radius + " meters from this point").openPopup();
-
-    L.circle(e.latlng, radius).addTo(map);
-}
-
-map.on('locationfound', onLocationFound);
-
-//Not Found
-const onLocationError = (e) => {
-    alert(e.message);
-}
-
-map.on('locationerror', onLocationError);
-*/
-
 //Main style for GeoJSON borders
 
 const borderStyle = (feature) => {
@@ -276,7 +250,7 @@ const borderStyle = (feature) => {
 //Selecting a country with the select dropdown box
 $('#country-list').on('change', (e) => {
     let layer;
-    map.eachLayer((l) => {
+    geojson.eachLayer((l) => {
         if (l.countryName === e.target.value) {
             layer = l;
         }
@@ -366,16 +340,31 @@ $.ajax({
                 $('#country-list').append('<option value=\"' + country.properties.name + '\">' + country.properties.name + '</option>');
             });
 
-            //select first country
-            let firstLayer;
-            map.eachLayer((l) => {
-                if (l.countryName === 'United Kingdom') {
-                    firstLayer = l;
-                }
-            });
+            //Find initial location
+            map.locate();
 
-            //select initial country
-            handleSelectCountry(firstLayer);
+            //Found
+            const onLocationFound = (e) => {
+                let country;
+                const coordinates = [e.latitude, e.longitude];
+                geojson.eachLayer((l) => {
+                    const boundsToCheck = l.getBounds();
+                    if (boundsToCheck.contains(coordinates)) {
+                        if (!country) {
+                            country = l;
+                        } else {
+                            return;
+                        }
+                    }
+                });
+                handleSelectCountry(country);
+            }
+            map.on('locationfound', onLocationFound);
+            //Not Found
+            const onLocationError = () => {
+                map.setZoom(2);
+            }
+            map.on('locationerror', onLocationError);
 
         } else {
             console.log('error');

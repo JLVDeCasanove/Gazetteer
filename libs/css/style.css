@@ -50,17 +50,21 @@
 
 /* Leaflet */
 
-#map {
-    height: 180px;
-}
-
 body {
+    border: 0;
     padding: 0;
     margin: 0;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
 }
-html, body, #map {
-    height: 90vh;
-    width: 90vw;
+
+#map {
+    height: 100vh;
+    width: 100vw;
+    border: 0;
+    padding: 0;
+    margin: 0;
 }
 
 .country-info {
@@ -80,7 +84,7 @@ html, body, #map {
     display: none;
     position: absolute;
     bottom: 50px;
-    right: 10px;
+    left: 10px;
     padding: 10px;
     z-index: 400;
 }
