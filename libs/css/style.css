@@ -75,3 +75,12 @@ html, body, #map {
     margin: 0 0 5px;
     color: #777;
 }
+
+#go-back {
+    display: none;
+    position: absolute;
+    bottom: 50px;
+    right: 10px;
+    padding: 10px;
+    z-index: 400;
+}

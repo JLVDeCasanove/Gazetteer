@@ -8,13 +8,15 @@ $(window).on('load', function () {
     }
 });
 
-// LEAFLET and map functionality
+//--------------------- LEAFLET initilisation--------------------------
 
 //initialise map and variables
 const map = L.map('map').fitWorld();
 let geojson;
 let selectedCountry;
 let cityLayer;
+let poiLayer;
+let poiBounds;
 
 //Add tile layer
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -22,6 +24,63 @@ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 }).addTo(map);
 
+
+//-----------------Country Selection Handler------------------
+
+const handleSelectCountry = async (layer) => {
+    //Set current target
+    selectedCountry = layer;
+
+    //Deselect current selected country
+    map.eachLayer((l) => {
+        if (l.isSelected) {
+            geojson.resetStyle(l);
+            l.isSelected = false;
+        }
+    });
+    //remove any city and poi layers
+    $('#go-back').hide();
+
+    if (cityLayer) {
+        cityLayer.removeFrom(map);
+    }
+
+    if (poiLayer) {
+        poiLayer.removeFrom(map);
+    }
+
+    layer.isSelected = true;
+    //zoom to country
+    map.fitBounds(layer.getBounds());
+
+    //highlight the new country
+    layer.setStyle({
+        fillColor: '#31a354',
+        weight: 5,
+        color: '#636363',
+        dashArray: '',
+        fillOpacity: 0.7
+    });
+
+    //update dropdown if needed
+    const { name } = selectedCountry.feature.properties;
+    if ($('#country-list').val() !== name) {
+        $('#country-list').val(name);
+    }
+
+    //Update country info
+    //ADD LOADING SCREEN FOR DATA PANE
+    const props = await getProps(layer)
+        .then((props) => countryInfo.update(props));
+    
+    //adding cities
+    const cities = await getCities(layer)
+        .then((cities) => cityLayer = L.layerGroup(cities))
+        .then(() => cityLayer.addTo(map));
+};
+
+
+//-----------------INFO PANE-----------------------------------------------
 
 //initilise country info pane controls
 const countryInfo = L.control();
@@ -38,7 +97,7 @@ countryInfo.update = function (props) {
             capital,
             area,
             population
-        } = props;
+    } = props;
 
     this._div.innerHTML = '<img src=https://flagsapi.com/' + iso_a2 + '/shiny/64.png>'
         + '<h4>' + iso_a2 + '</h4><br>'
@@ -52,7 +111,7 @@ countryInfo.update = function (props) {
 const getProps = async (layer) => {
     //ajax for country info
     await $.ajax({
-        url: "./libs/php/capitals.php",
+        url: "./libs/php/country-info.php",
         type: 'POST',
         dataType: 'json',
         data: {
@@ -83,6 +142,8 @@ const getProps = async (layer) => {
 //add info pane
 countryInfo.addTo(map);
 
+//------------CITY LAYER-------------------------------------------------------
+
 //Get city info
 const getCities = async (layer) => {
     let cityArr = [];
@@ -100,8 +161,11 @@ const getCities = async (layer) => {
             if (result.status.name == "ok") {
                 cityArr = [];
                 result.data.data.forEach((city) => {
-                    cityArr.push(L.marker([city.latitude, city.longitude]).bindPopup(city.name));
-                })
+                    cityArr.push(L.marker([city.latitude, city.longitude]).bindPopup(
+                        '<h5>' + city.name + '</h5>'
+                        + '<button class="btn" type="button" id="poi-button" latitude="' + city.latitude + '"' + 'longitude="' + city.longitude + '"' + 'country="' + city.countryCode + '">See nearby POIs</button>'));
+                });
+
             } else {
                 console.log('error');
             }
@@ -113,6 +177,61 @@ const getCities = async (layer) => {
     });
     return cityArr;
 };
+
+
+//----------------------POIS------------------------------------------
+
+//Get POI info
+
+const getPois = async (latitude, longitude, country) => {
+    let poiArr = [];
+    await $.ajax({
+        url: "./libs/php/pois.php",
+        type: 'POST',
+        dataType: 'json',
+        data: {
+            latitude: latitude,
+            longitude: longitude,
+            country: country
+        },
+        success: function(result) {
+    
+            console.log(JSON.stringify(result));
+            
+            if (result.status.name == "ok") {
+                poiArr = [];
+                poiBounds = [];
+                result.data.forEach((poi) => {
+                    poiArr.push(L.marker([poi.lat, poi.lng]).bindPopup(poi.title));
+                    poiBounds.push([poi.lat, poi.lng]);
+                });
+            } else {
+                console.log('error');
+            }
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            console.log('POST request not fulfilled');
+        }
+    });
+    return poiArr;
+}
+
+//show nearby POIs once city is selected
+
+const handleShowPois = async (latitude, longitude, country) => {
+    //remove other cities + pois from map
+    if (poiLayer) {
+        poiLayer.removeFrom(map);
+    }
+    cityLayer.removeFrom(map);
+    //Show back button
+    $('#go-back').show();
+    //adding pois
+    const pois = await getPois(latitude, longitude, country)
+        .then((pois) => poiLayer = L.layerGroup(pois))
+        .then(() => map.flyToBounds(poiBounds, { duration: 1 }))
+        .then(() => poiLayer.addTo(map));
+}
 
 
 /*
@@ -139,7 +258,6 @@ const onLocationError = (e) => {
 map.on('locationerror', onLocationError);
 */
 
-
 //Main style for GeoJSON borders
 
 const borderStyle = (feature) => {
@@ -153,9 +271,9 @@ const borderStyle = (feature) => {
     }
 };
 
-//Event Listeners
+//------------------EVENT LISTENERS-----------------------------------------
 
-//Selecting a country with the select box
+//Selecting a country with the select dropdown box
 $('#country-list').on('change', (e) => {
     let layer;
     map.eachLayer((l) => {
@@ -170,53 +288,6 @@ $('#country-list').on('change', (e) => {
 const selectFeature = (e) => {
     const layer = e.target;
     handleSelectCountry(layer);
-};
-
-//Country Selection Handler
-const handleSelectCountry = async (layer) => {
-    //Set current target
-    selectedCountry = layer;
-
-    //Deselect current selected country
-    map.eachLayer((l) => {
-        if (l.isSelected) {
-            geojson.resetStyle(l);
-            l.isSelected = false;
-        }
-    });
-
-    if (cityLayer) {
-        cityLayer.removeFrom(map);
-    }
-
-    layer.isSelected = true;
-    //zoom to country
-    map.fitBounds(layer.getBounds());
-
-    //highlight the new country
-    layer.setStyle({
-        fillColor: '#31a354',
-        weight: 5,
-        color: '#636363',
-        dashArray: '',
-        fillOpacity: 0.7
-    });
-
-    //update dropdown if needed
-    const { name, iso_2 } = selectedCountry.feature.properties;
-    if ($('#country-list').val() !== name) {
-        $('#country-list').val(name);
-    }
-
-    //Update country info
-    //ADD LOADING SCREEN FOR DATA PANE
-    const props = await getProps(layer)
-        .then((props) => countryInfo.update(props));
-    
-    //adding cities
-    const cities = await getCities(layer)
-        .then((cities) => cityLayer = L.layerGroup(cities))
-        .then(() => cityLayer.addTo(map));
 };
 
 //Highting a country on mouseover
@@ -243,6 +314,20 @@ const resetHighlight = (e) => {
     }
 }
 
+//Showing nearby POIs when clicking on the button
+$('#map').on('click', '#poi-button', (e) => {
+    const latitude = e.currentTarget.getAttribute('latitude');
+    const longitude = e.currentTarget.getAttribute('longitude');
+    const country = e.currentTarget.getAttribute('country');
+    handleShowPois(latitude, longitude, country);
+});
+
+//clicking on the back button after searching POIs
+$('#go-back').on('click', () => {
+    handleSelectCountry(selectedCountry);
+});
+
+
 //tie functions to listeners
 const onEachFeature = (feature, layer) => {
     layer.on({
@@ -254,7 +339,7 @@ const onEachFeature = (feature, layer) => {
     layer.countryName = layer.feature.properties.name;
 }
 
-
+//-----------------POPULATING MAP ON LOAD----------------------------------------
 
 //Adding GeoJSON borders, populating country list
 
