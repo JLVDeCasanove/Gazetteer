@@ -25,6 +25,35 @@ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 }).addTo(map);
 
 
+//-----------------MAP STYLES---------------------------------
+
+const defaultCountryStyle = (feature) => {
+    return {
+        fillColor: '#313B72',
+        weight: 2,
+        opacity: 1,
+        color: 'black',
+        dashArray: '3',
+        fillOpacity: 0.7
+    }
+};
+
+const highlightedCountryStyle = {
+    fillColor: '#809848',
+    weight: 3,
+    color: '#666',
+    dashArray: '',
+    fillOpacity: 0.7
+};
+
+const selectedCountryStyle = {
+    fillColor: '#447604',
+    weight: 5,
+    color: '#48245e',
+    dashArray: '',
+    fillOpacity: 0.7
+};
+
 //-----------------Country Selection Handler------------------
 
 const handleSelectCountry = async (layer) => {
@@ -54,13 +83,8 @@ const handleSelectCountry = async (layer) => {
     map.fitBounds(layer.getBounds());
 
     //highlight the new country
-    layer.setStyle({
-        fillColor: '#31a354',
-        weight: 5,
-        color: '#636363',
-        dashArray: '',
-        fillOpacity: 0.7
-    });
+    layer.setStyle(selectedCountryStyle);
+    layer.bringToFront;
 
     //update dropdown if needed
     const { name } = selectedCountry.feature.properties;
@@ -98,12 +122,12 @@ countryInfo.update = function (props) {
             population
     } = props;
 
-    this._div.innerHTML = '<img src=https://flagsapi.com/' + iso_a2 + '/shiny/64.png>'
-        + '<h4>' + iso_a2 + '</h4><br>'
-        + '<p>Continent: ' + continent + '</p>'
-        + '<p>Capital: ' + capital + '</p>'
-        + '<p>Area: ' + area + ' km&sup2;</p>'
-        + '<p>Population: ' + population + '</p>';
+    this._div.innerHTML = '<div id="country-info-id"><img src=https://flagsapi.com/' + iso_a2 + '/shiny/64.png>'
+        + '<h4>' + iso_a2 + '</h4></div><br>'
+        + '<p><b>Continent:</b> ' + continent + '</p>'
+        + '<p><b>Capital:</b> ' + capital + '</p>'
+        + '<p><b>Area:</b> ' + area + ' km&sup2;</p>'
+        + '<p><b>Population:</b> ' + population + '</p>';
 };
 
 //get properties for info pane
@@ -162,7 +186,8 @@ const getCities = async (layer) => {
                 result.data.data.forEach((city) => {
                     cityArr.push(L.marker([city.latitude, city.longitude]).bindPopup(
                         '<h5>' + city.name + '</h5>'
-                        + '<button class="btn" type="button" id="poi-button" latitude="' + city.latitude + '"' + 'longitude="' + city.longitude + '"' + 'country="' + city.countryCode + '">See nearby POIs</button>'));
+                        + '<button class="btn" type="button" id="poi-button" latitude="' + city.latitude + '"' + 'longitude="' + city.longitude + '"' + 'country="' + city.countryCode + '">See nearby POIs</button>'
+                    ));
                 });
 
             } else {
@@ -176,7 +201,6 @@ const getCities = async (layer) => {
     });
     return cityArr;
 };
-
 
 //----------------------POIS------------------------------------------
 
@@ -201,7 +225,10 @@ const getPois = async (latitude, longitude, country) => {
                 poiArr = [];
                 poiBounds = [];
                 result.data.forEach((poi) => {
-                    poiArr.push(L.marker([poi.lat, poi.lng]).bindPopup(poi.title));
+                    poiArr.push(L.marker([poi.lat, poi.lng]).bindPopup(
+                        '<h5>' + poi.title + '</h5>'
+                        + '<a href="http://' + poi.wikipediaUrl + '" target="_blank" class="popup">Click here for wiki page</a>'
+                    ));
                     poiBounds.push([poi.lat, poi.lng]);
                 });
             } else {
@@ -234,16 +261,7 @@ const handleShowPois = async (latitude, longitude, country) => {
 
 //Main style for GeoJSON borders
 
-const borderStyle = (feature) => {
-    return {
-        fillColor: '#f7fcb9',
-        weight: 2,
-        opacity: 1,
-        color: 'black',
-        dashArray: '3',
-        fillOpacity: 0.7
-    }
-};
+
 
 //------------------EVENT LISTENERS-----------------------------------------
 
@@ -268,14 +286,7 @@ const selectFeature = (e) => {
 const highlightFeature = (e) => {
     const layer = e.target;
     if (!layer.isSelected) {
-        layer.setStyle({
-            fillColor: '#addd8e',
-            weight: 3,
-            color: '#666',
-            dashArray: '',
-            fillOpacity: 0.7
-        });
-    
+        layer.setStyle(highlightedCountryStyle);
         layer.bringToFront();
     }
 };
@@ -330,7 +341,7 @@ $.ajax({
             const mapData = result.data;
             //add borders
             geojson = L.geoJson(mapData, {
-                style: borderStyle,
+                style: defaultCountryStyle,
                 onEachFeature: onEachFeature
             }).addTo(map);
 
@@ -363,6 +374,7 @@ $.ajax({
             //Not Found
             const onLocationError = () => {
                 map.setZoom(2);
+                console.log('Location not found');
             }
             map.on('locationerror', onLocationError);
 

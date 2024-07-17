@@ -11,9 +11,10 @@
 
     <link href="./favicon.png" type="image/png" rel="icon">
     <link href="./libs/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-    crossorigin=""/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lobster&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
     <link href="./libs/css/style.css" rel="stylesheet">
 
   </head>
@@ -21,21 +22,20 @@
   <body>
     <div class ="container-fluid">
         <div class="row">
-          <nav class="col navbar navbar-dark bg-primary">
+          <nav class="col navbar navbar-dark">
               <div class="nav-item dropdown">
                 <a href ="#" class="navbar-brand dropdown-toggle" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                   Gazetteer
                 </a>
                 <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                  <a href="#" class="dropdown-item">About</a>
+                  <a href="#" class="dropdown-item">Attributions</a>
+                          <!-- ATTRIBUTIONS HERE  -->
                 </div>
               </div>
 
-              <select id="country-list" class="navbar-nav"></select>
+              <select id="country-list" class="navbar-nav form-select"></select>
           </nav>
         </div>
-        <!-- DON'T FORGET TO PUT IN A CREDIT FOR THE ICON <a href="https://www.flaticon.com/free-icons/earth" title="earth icons">Earth icons created by Freepik - Flaticon</a>  -->
-        <!-- ALSO API ATTRIBUTIONS -->
         <div class="row">
             <div id="map"></div>
             <button id="go-back" type="button" class="btn">Go Back</button>
@@ -51,3 +51,7 @@
   </body>
 
 </html>
+
+<!--ATRIBUTIONS
+<a href="https://www.flaticon.com/free-icons/earth" title="earth icons">Earth icons created by Freepik - Flaticon</a>
+-->

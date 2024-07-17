@@ -57,6 +57,20 @@ body {
     height: 100vh;
     width: 100vw;
     overflow: hidden;
+    font-family: "Roboto", sans-serif;
+}
+
+.navbar {
+    background-color: #462255;
+}
+
+.navbar-brand {
+    font-size: 26pt;
+    font-family: "Lobster", sans-serif;
+}
+
+#country-list {
+    text-align: center;
 }
 
 #map {
@@ -70,21 +84,72 @@ body {
 .country-info {
     padding: 6px 8px;
     font: 14px/16px Arial, Helvetica, sans-serif;
-    background: white;
-    background: rgba(255,255,255,0.8);
+    background-color: #56829e;
+    color: white;
     box-shadow: 0 0 15px rgba(0,0,0,0.2);
     border-radius: 5px;
+    border: 5px;
+    border-style: dashed;
+    border-color: #462255;
+    text-align: center;
 }
-.country-info h4 {
-    margin: 0 0 5px;
-    color: #777;
+
+p.country-info {
+    margin-top: 3px;
+    padding-top: 5px;
+    margin-bottom: 3px;
+    padding-bottom: 5px;
+}
+
+.leaflet-popup-tip {
+    background-color: #56829e;
+    color: white;
+    border: 2px;
+    border-style: dashed;
+    border-color: #462255;
+    border-radius: 5px;
+    text-align: center;
+}
+
+.leaflet-popup-content-wrapper {
+    background-color: #56829e;
+    color: white;
+    border: 2px;
+    border-style: dashed;
+    border-color: #462255;
+    border-radius: 5px;
+    text-align: center;
+}
+
+a.popup {
+    color: white;
 }
 
 #go-back {
     display: none;
     position: absolute;
     bottom: 50px;
-    left: 10px;
+    left: 50px;
     padding: 10px;
     z-index: 400;
+}
+
+#country-list {
+    background-color: #56829e;
+    color: white;
+    font-size: 18pt;
+}
+
+.btn {
+    background-color: #462255;
+    font-weight: bold;
+    color: white;
+}
+
+.btn:hover {
+    background-color: #313B72;
+}
+
+.btn:onclick {
+    background-color: #1d234b;
 }
