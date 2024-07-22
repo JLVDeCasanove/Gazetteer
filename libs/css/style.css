@@ -1,7 +1,7 @@
 
-/* Preloader */
+/* loader */
 
-#preloader {
+#loader {
     position: fixed;
     top: 0;
     left: 0;
@@ -9,10 +9,10 @@
     bottom: 0;
     z-index: 9999;
     overflow: hidden;
-    background: #fff;
+    background: #ffffff29;
 }
     
-#preloader:before {
+#loader:before {
     content: "";
     position: fixed;
     top: calc(50% - 30px);
@@ -69,8 +69,39 @@ body {
     font-family: "Lobster", sans-serif;
 }
 
+.dropdown-menu {
+    z-index: 9998;
+}
+
+div.dropdown-menu.show {
+    background-color: #56829e;
+    color: white;
+}
+
+a.dropdown-text {
+    color: white;
+}
+
+div.dropdown-item {
+    background-color: #56829e;
+    color: white;
+}
+
+div.dropdown-item:hover {
+    background-color: #56829e;
+    color: white;
+}
+
+div.dropdown-item:onclick {
+    background-color: #56829e;
+    color: white;
+}
+
 #country-list {
     text-align: center;
+    background-color: #56829e;
+    color: white;
+    font-size: 18pt;
 }
 
 #map {
@@ -83,7 +114,7 @@ body {
 
 .country-info {
     padding: 6px 8px;
-    font: 14px/16px Arial, Helvetica, sans-serif;
+    font-size: 12pt;
     background-color: #56829e;
     color: white;
     box-shadow: 0 0 15px rgba(0,0,0,0.2);
@@ -128,16 +159,10 @@ a.popup {
 #go-back {
     display: none;
     position: absolute;
-    bottom: 50px;
-    left: 50px;
+    bottom: 40px;
+    left: 40px;
     padding: 10px;
-    z-index: 400;
-}
-
-#country-list {
-    background-color: #56829e;
-    color: white;
-    font-size: 18pt;
+    z-index: 1000;
 }
 
 .btn {
@@ -152,4 +177,49 @@ a.popup {
 
 .btn:onclick {
     background-color: #1d234b;
+}
+
+@media only screen and (max-width: 700px) {
+    .navbar-brand {
+        font-size: 14pt;
+        font-family: "Lobster", sans-serif;
+    }
+
+    .country-info {
+        padding: 2px;
+        font-size: 8pt;
+    }
+
+    div.country-info.leaflet-control {
+        margin: 3px;
+    }
+
+    h4 {
+        margin-bottom: 0;
+    }
+
+    .extra-info {
+        display: none;
+    }
+
+    #country-list {
+        font-size: 12pt;
+    }
+
+
+    .dropdown-text {
+        font-size: 10pt;
+    }
+
+    #go-back {
+        position: absolute;
+        bottom: 25px;
+        left: 25px;
+    }
+
+    div.dropdown-item {
+        margin: 5px;
+        padding: 5px;
+    }
+
 }

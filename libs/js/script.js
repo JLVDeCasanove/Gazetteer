@@ -1,9 +1,9 @@
 
 // PRE-LOADER
 $(window).on('load', function () {
-    if ($('#preloader').length) {
-        $('#preloader').delay(1000).fadeOut('slow', function () {
-            $(this).remove();
+    if ($('#loader').length) {
+        $('#loader').delay(1000).fadeOut('slow', function () {
+            $(this).hide();
         });
     }
 });
@@ -57,6 +57,7 @@ const selectedCountryStyle = {
 //-----------------Country Selection Handler------------------
 
 const handleSelectCountry = async (layer) => {
+    $('#loader').show();
     //Set current target
     selectedCountry = layer;
 
@@ -100,7 +101,8 @@ const handleSelectCountry = async (layer) => {
     //adding cities
     const cities = await getCities(layer)
         .then((cities) => cityLayer = L.layerGroup(cities))
-        .then(() => cityLayer.addTo(map));
+        .then(() => cityLayer.addTo(map))
+        .then(() => $('#loader').hide());
 };
 
 //-----------------INFO PANE-----------------------------------------------
@@ -124,10 +126,10 @@ countryInfo.update = function (props) {
 
     this._div.innerHTML = '<div id="country-info-id"><img src=https://flagsapi.com/' + iso_a2 + '/shiny/64.png>'
         + '<h4>' + iso_a2 + '</h4></div><br>'
-        + '<p><b>Continent:</b> ' + continent + '</p>'
-        + '<p><b>Capital:</b> ' + capital + '</p>'
-        + '<p><b>Area:</b> ' + area + ' km&sup2;</p>'
-        + '<p><b>Population:</b> ' + population + '</p>';
+        + '<p class="extra-info"><b>Continent:</b> ' + continent + '</p>'
+        + '<p class="extra-info"><b>Capital:</b> ' + capital + '</p>'
+        + '<p class="extra-info"><b>Area:</b> ' + area + ' km&sup2;</p>'
+        + '<p class="extra-info"><b>Population:</b> ' + population + '</p>';
 };
 
 //get properties for info pane
@@ -156,6 +158,7 @@ const getProps = async (layer) => {
         },
         error: function(jqXHR, textStatus, errorThrown) {
             console.log('POST request not fulfilled');
+            $('#loader').hide();
         }
     });
 
@@ -197,6 +200,7 @@ const getCities = async (layer) => {
         },
         error: function(jqXHR, textStatus, errorThrown) {
             console.log('POST request not fulfilled');
+            $('#loader').hide();
         }
     });
     return cityArr;
@@ -237,6 +241,7 @@ const getPois = async (latitude, longitude, country) => {
         },
         error: function(jqXHR, textStatus, errorThrown) {
             console.log('POST request not fulfilled');
+            $('#loader').hide();
         }
     });
     return poiArr;
@@ -245,6 +250,7 @@ const getPois = async (latitude, longitude, country) => {
 //show nearby POIs once city is selected
 
 const handleShowPois = async (latitude, longitude, country) => {
+    $('#loader').show();
     //remove other cities + pois from map
     if (poiLayer) {
         poiLayer.removeFrom(map);
@@ -256,7 +262,8 @@ const handleShowPois = async (latitude, longitude, country) => {
     const pois = await getPois(latitude, longitude, country)
         .then((pois) => poiLayer = L.layerGroup(pois))
         .then(() => map.flyToBounds(poiBounds, { duration: 1 }))
-        .then(() => poiLayer.addTo(map));
+        .then(() => poiLayer.addTo(map))
+        .then(() => $('#loader').hide());
 }
 
 //Main style for GeoJSON borders
@@ -347,8 +354,13 @@ $.ajax({
 
             //populate country list
             const countryList = mapData.features;
+            const countryArr = [];
             countryList.forEach((country) => {
-                $('#country-list').append('<option value=\"' + country.properties.name + '\">' + country.properties.name + '</option>');
+                countryArr.push(country.properties.name);
+            });
+            countryArr.sort();
+            countryArr.forEach((country) => {
+                $('#country-list').append('<option value=\"' + country + '\">' + country + '</option>');
             });
 
             //Find initial location
@@ -385,5 +397,6 @@ $.ajax({
     },
     error: function(jqXHR, textStatus, errorThrown) {
         console.log('POST request not fulfilled');
+        $('#loader').hide();
     }
 });
