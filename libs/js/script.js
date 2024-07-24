@@ -5,6 +5,7 @@ $(window).on('load', function () {
         $('#loader').delay(1000).fadeOut('slow', function () {
             $(this).hide();
         });
+        $('#loader').css('background-color', '#ffffff29');
     }
 });
 
@@ -126,10 +127,10 @@ countryInfo.update = function (props) {
 
     this._div.innerHTML = '<div id="country-info-id"><img src=https://flagsapi.com/' + iso_a2 + '/shiny/64.png>'
         + '<h4>' + iso_a2 + '</h4></div><br>'
-        + '<p class="extra-info"><b>Continent:</b> ' + continent + '</p>'
-        + '<p class="extra-info"><b>Capital:</b> ' + capital + '</p>'
-        + '<p class="extra-info"><b>Area:</b> ' + area + ' km&sup2;</p>'
-        + '<p class="extra-info"><b>Population:</b> ' + population + '</p>';
+        + '<div class="extra-info"><p><b>Continent:</b> ' + continent + '</p>'
+        + '<p><b>Capital:</b> ' + capital + '</p>'
+        + '<p><b>Area:</b> ' + area + ' km&sup2;</p>'
+        + '<p><b>Population:</b> ' + population + '</p></div>';
 };
 
 //get properties for info pane
@@ -163,6 +164,11 @@ const getProps = async (layer) => {
     });
 
     return layer.feature.properties;
+}
+
+//toggle detailed info
+const toggleInfo = () => {
+    $('.extra-info').toggle();
 }
 
 //add info pane
@@ -266,10 +272,6 @@ const handleShowPois = async (latitude, longitude, country) => {
         .then(() => $('#loader').hide());
 }
 
-//Main style for GeoJSON borders
-
-
-
 //------------------EVENT LISTENERS-----------------------------------------
 
 //Selecting a country with the select dropdown box
@@ -319,6 +321,19 @@ $('#go-back').on('click', () => {
     handleSelectCountry(selectedCountry);
 });
 
+//Toggle detailed info by clicking on the info pane.
+$('#map').on('click', '.country-info', () => {
+    toggleInfo();
+    $('.country-info').css('background-color', '#56829e');
+});
+
+//mouseover styling
+$('#map').on('mouseover', '.country-info', () => {
+    $('.country-info').css('background-color', '#462255');
+});
+$('#map').on('mouseleave', '.country-info', () => {
+    $('.country-info').css('background-color', '#56829e');
+});
 
 //tie functions to listeners
 const onEachFeature = (feature, layer) => {

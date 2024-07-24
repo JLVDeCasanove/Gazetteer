@@ -9,7 +9,7 @@
     bottom: 0;
     z-index: 9999;
     overflow: hidden;
-    background: #ffffff29;
+    background: #ffffff;
 }
     
 #loader:before {
@@ -178,6 +178,8 @@ a.popup {
 .btn:onclick {
     background-color: #1d234b;
 }
+
+/* Media queries for small screens */
 
 @media only screen and (max-width: 700px) {
     .navbar-brand {

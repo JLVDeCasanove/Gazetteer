@@ -10,7 +10,7 @@
 	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 	curl_setopt($ch, CURLOPT_URL,$url);
-	curl_setopt($ch, CURLOPT_HTTPHEADER, ["x-rapidapi-host: wft-geo-db.p.rapidapi.com", "x-rapidapi-key: ea08f4cb49msh5b4eb1229a7b550p19fe48jsn418e52bf39b4"]);
+	curl_setopt($ch, CURLOPT_HTTPHEADER, ['x-rapidapi-host: wft-geo-db.p.rapidapi.com', 'x-rapidapi-key: ea08f4cb49msh5b4eb1229a7b550p19fe48jsn418e52bf39b4']);
 
 	$result=curl_exec($ch);
 
