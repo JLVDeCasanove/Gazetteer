@@ -1,10 +1,13 @@
 <?php
-    ini_set('display_errors', 'On');
+	$env = parse_ini_file('../../.env');
+	$apiKey = $env['GEONAMES_API_KEY'];
+
+	ini_set('display_errors', 'On');
 	error_reporting(E_ALL);
 
 	$executionStartTime = microtime(true);
 
-	$url='http://api.geonames.org/countryInfoJSON?country=' . $_REQUEST['country'] . '&username=jlvdecasanove';
+	$url='http://api.geonames.org/countryInfoJSON?country=' . $_REQUEST['country'] . '&username=' . $apiKey;
 
 	$ch = curl_init();
 	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
