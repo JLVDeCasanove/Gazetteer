@@ -1,5 +1,7 @@
 <?php
-    ini_set('display_errors', 'On');
+    $geojson = file_get_contents('../../libs/json/countryBorders.geo.json');
+	
+	ini_set('display_errors', 'On');
 	error_reporting(E_ALL);
 
 	$executionStartTime = microtime(true);

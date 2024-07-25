@@ -11,20 +11,55 @@ $(window).on('load', function () {
 
 //--------------------- LEAFLET initilisation--------------------------
 
-//initialise map and variables
-const map = L.map('map').fitWorld();
+//initialise variables
+let map;
 let geojson;
 let selectedCountry;
 let cityLayer;
 let poiLayer;
 let poiBounds;
 
+/*
 //Add tile layer
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 }).addTo(map);
+*/
 
+// tile layers
+
+const streets = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}", {
+    attribution: "Tiles &copy; Esri &mdash; Source: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China (Hong Kong), Esri (Thailand), TomTom, 2012"
+  }
+);
+
+const satellite = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
+    attribution: "Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community"
+  }
+);
+
+const baselayers = {
+  "Streets": streets,
+  "Satellite": satellite
+};
+
+map = L.map('map', {
+    layers: [streets]
+}).fitWorld();
+
+//Layer selection control
+
+layerControl = L.control.layers(baselayers, null, { position: 'topleft' }).addTo(map);
+
+
+//-----------------modal buttons------------------------------
+
+var infoBtn = L.easyButton("fa-info fa-xl", function (btn, map) {
+    $("#exampleModal").modal("show");
+  });
+
+infoBtn.addTo(map);
 
 //-----------------MAP STYLES---------------------------------
 
@@ -324,15 +359,24 @@ $('#go-back').on('click', () => {
 //Toggle detailed info by clicking on the info pane.
 $('#map').on('click', '.country-info', () => {
     toggleInfo();
-    $('.country-info').css('background-color', '#56829e');
+    $('.country-info').css({
+        'background-color' : '#462255',
+        'color' : 'white'
+    });
 });
 
 //mouseover styling
 $('#map').on('mouseover', '.country-info', () => {
-    $('.country-info').css('background-color', '#462255');
+    $('.country-info').css({
+        'background-color': '#7094cf',
+        'color' : '#242526'
+    });
 });
 $('#map').on('mouseleave', '.country-info', () => {
-    $('.country-info').css('background-color', '#56829e');
+    $('.country-info').css({
+        'background-color' : '#462255',
+        'color' : 'white'
+    });
 });
 
 //tie functions to listeners
