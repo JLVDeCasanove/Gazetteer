@@ -395,7 +395,7 @@ const onEachFeature = (feature, layer) => {
 //Adding GeoJSON borders, populating country list
 
 $.ajax({
-    url: "./libs/php/countries.php",
+    url: "./libs/php/geojson-borders.php",
     type: 'POST',
     dataType: 'json',
     data: {},

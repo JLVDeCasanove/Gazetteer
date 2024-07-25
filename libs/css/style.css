@@ -141,6 +141,7 @@ a.popup {
 #go-back {
     display: none;
     position: absolute;
+    width: 100px;
     bottom: 40px;
     left: 40px;
     padding: 10px;
@@ -188,6 +189,10 @@ a.popup {
         display: none;
     }
 
+    #select-container {
+        left: 15%;
+      }
+
     #country-list {
         font-size: 12pt;
     }
@@ -199,7 +204,7 @@ a.popup {
 
     #go-back {
         position: absolute;
-        bottom: 25px;
+        bottom: 55px;
         left: 25px;
     }
 
