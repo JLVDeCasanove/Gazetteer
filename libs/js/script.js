@@ -15,19 +15,10 @@ $(window).on('load', function () {
 let map;
 let geojson;
 let selectedCountry;
-let cityLayer;
-let poiLayer;
-let poiBounds;
-
-const handlePOSTError = () => {
-    $('#loader').hide();
-    if (selectedCountry) {
-        handleSelectCountry(selectedCountry);
-    }
-}
+let cityGroup = L.layerGroup([]);
+let airportGroup = L.layerGroup([]);
 
 //tile layers
-
 const streets = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}", {
     maxZoom: 19,
     attribution: "Tiles &copy; Esri &mdash; Source: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China (Hong Kong), Esri (Thailand), TomTom, 2012"
@@ -39,20 +30,25 @@ const satellite = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/servi
     attribution: "Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community"
   }
 );
+const baseLayers = {
+    "Streets": streets,
+    "Satellite": satellite
+  };
 
-const baselayers = {
-  "Streets": streets,
-  "Satellite": satellite
-};
+//Global functions
+
+const handlePOSTError = () => {
+    $('#loader').hide();
+}
+
+//initialise map
 
 map = L.map('map', {
     layers: [streets]
 }).fitWorld();
 
-//Layer selection control
-
-layerControl = L.control.layers(baselayers, null, { position: 'topleft' }).addTo(map);
-
+//add layer controls
+layerControl = L.control.layers(baseLayers, null, { position: 'topleft' }).addTo(map);
 
 //-----------------modal buttons------------------------------
 
@@ -95,7 +91,6 @@ const selectedCountryStyle = {
 //-----------------Country Selection Handler------------------
 
 const handleSelectCountry = async (layer) => {
-    $('#loader').show();
     //Set current target
     selectedCountry = layer;
 
@@ -106,16 +101,9 @@ const handleSelectCountry = async (layer) => {
             l.isSelected = false;
         }
     });
-    //remove any city and poi layers
-    $('#go-back').hide();
 
-    if (cityLayer) {
-        cityLayer.removeFrom(map);
-    }
-
-    if (poiLayer) {
-        poiLayer.removeFrom(map);
-    }
+    layerControl.removeLayer(cityGroup);
+    layerControl.removeLayer(airportGroup);
 
     layer.isSelected = true;
     //zoom to country
@@ -132,15 +120,18 @@ const handleSelectCountry = async (layer) => {
     }
 
     //Update country info
-    //ADD LOADING SCREEN FOR DATA PANE
     const props = await getProps(layer)
         .then((props) => countryInfo.update(props));
     
     //adding cities
     const cities = await getCities(layer)
-        .then((cities) => cityLayer = L.layerGroup(cities))
-        .then(() => cityLayer.addTo(map))
-        .then(() => $('#loader').hide());
+        .then((cities) => cityGroup = L.layerGroup(cities))
+        .then(() => layerControl.addOverlay(cityGroup, 'Cities'))
+
+    //adding airports
+    const airports = await getAirports(layer)
+    .then((airports) => airportGroup = L.layerGroup(airports))
+    .then(() => layerControl.addOverlay(airportGroup, 'Airports'))
 };
 
 //-----------------INFO PANE-----------------------------------------------
@@ -229,11 +220,8 @@ const getCities = async (layer) => {
             
             if (result.status.name == "ok") {
                 cityArr = [];
-                result.data.data.forEach((city) => {
-                    cityArr.push(L.marker([city.latitude, city.longitude]).bindPopup(
-                        '<h5>' + city.name + '</h5>'
-                        + '<button class="btn" type="button" id="poi-button" latitude="' + city.latitude + '"' + 'longitude="' + city.longitude + '"' + 'country="' + city.countryCode + '">See nearby POIs</button>'
-                    ));
+                result.data.forEach((city) => {
+                    cityArr.push(L.marker([city.latitude, city.longitude]).bindPopup('<h5>' + city.name + '</h5>'));
                 });
 
             } else {
@@ -249,65 +237,39 @@ const getCities = async (layer) => {
     return cityArr;
 };
 
-//----------------------POIS------------------------------------------
 
-//Get POI info
-
-const getPois = async (latitude, longitude, country) => {
-    let poiArr = [];
+const getAirports = async (layer) => {
+    let airportArr = [];
     await $.ajax({
-        url: "./libs/php/pois.php",
+        url: "./libs/php/airports.php",
         type: 'POST',
         dataType: 'json',
         data: {
-            latitude: latitude,
-            longitude: longitude,
-            country: country
+            country: layer.feature.properties.iso_a2
         },
         success: function(result) {
     
             console.log(JSON.stringify(result));
             
             if (result.status.name == "ok") {
-                poiArr = [];
-                poiBounds = [];
-                result.data.forEach((poi) => {
-                    poiArr.push(L.marker([poi.lat, poi.lng]).bindPopup(
-                        '<h5>' + poi.title + '</h5>'
-                        + '<a href="http://' + poi.wikipediaUrl + '" target="_blank" class="popup">Click here for wiki page</a>'
-                    ));
-                    poiBounds.push([poi.lat, poi.lng]);
+                airportArr = [];
+                result.data.forEach((airport) => {
+                    airportArr.push(L.marker([airport.latitude, airport.longitude]).bindPopup('<h5>' + airport.name + '</h5>'));
                 });
+
             } else {
                 console.log('error');
             }
+        
         },
         error: function(jqXHR, textStatus, errorThrown) {
             console.log('POST request not fulfilled');
             handlePOSTError();
         }
     });
-    return poiArr;
+    return airportArr;
 }
 
-//show nearby POIs once city is selected
-
-const handleShowPois = async (latitude, longitude, country) => {
-    $('#loader').show();
-    //remove other cities + pois from map
-    if (poiLayer) {
-        poiLayer.removeFrom(map);
-    }
-    cityLayer.removeFrom(map);
-    //Show back button
-    $('#go-back').show();
-    //adding pois
-    const pois = await getPois(latitude, longitude, country)
-        .then((pois) => poiLayer = L.layerGroup(pois))
-        .then(() => map.flyToBounds(poiBounds, { duration: 1 }))
-        .then(() => poiLayer.addTo(map))
-        .then(() => $('#loader').hide());
-}
 
 //------------------EVENT LISTENERS-----------------------------------------
 
@@ -344,19 +306,6 @@ const resetHighlight = (e) => {
         geojson.resetStyle(layer);
     }
 }
-
-//Showing nearby POIs when clicking on the button
-$('#map').on('click', '#poi-button', (e) => {
-    const latitude = e.currentTarget.getAttribute('latitude');
-    const longitude = e.currentTarget.getAttribute('longitude');
-    const country = e.currentTarget.getAttribute('country');
-    handleShowPois(latitude, longitude, country);
-});
-
-//clicking on the back button after searching POIs
-$('#go-back').on('click', () => {
-    handleSelectCountry(selectedCountry);
-});
 
 //Toggle detailed info by clicking on the info pane.
 $('#map').on('click', '.country-info', () => {
@@ -443,7 +392,7 @@ $.ajax({
         } else {
             console.log('error');
         }
-    
+
     },
     error: function(jqXHR, textStatus, errorThrown) {
         console.log('POST request not fulfilled');
