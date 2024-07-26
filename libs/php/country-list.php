@@ -1,5 +1,5 @@
 <?php
-    $geojson = file_get_contents('C:\xampp\htdocs\project1\libs\php\json\countryBorders.geo.json');
+    $geojson = file_get_contents('json/countryBorders.geo.json');
 
     $decode = json_decode($geojson, true);
 
