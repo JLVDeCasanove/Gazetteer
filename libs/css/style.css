@@ -138,16 +138,6 @@ a.popup {
     color: white;
 }
 
-#go-back {
-    display: none;
-    position: absolute;
-    width: 100px;
-    bottom: 40px;
-    left: 40px;
-    padding: 10px;
-    z-index: 1000;
-}
-
 .btn {
     background-color: #462255;
     font-weight: bold;
@@ -163,6 +153,9 @@ a.popup {
     background-color: #1d234b;
 }
 
+.modal-header {
+    background-color: #1d234b;
+}
 
 /* Media queries for small screens */
 
@@ -200,12 +193,6 @@ a.popup {
 
     .dropdown-text {
         font-size: 10pt;
-    }
-
-    #go-back {
-        position: absolute;
-        bottom: 55px;
-        left: 25px;
     }
 
     div.dropdown-item {
