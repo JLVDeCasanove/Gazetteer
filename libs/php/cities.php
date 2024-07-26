@@ -7,7 +7,7 @@
 
 	$executionStartTime = microtime(true);
 
-	$url='https://wft-geo-db.p.rapidapi.com/v1/geo/cities?types=CITY&countryIds=' . $_REQUEST['country'] . '&limit=8&sort=-population';
+	$url='https://wft-geo-db.p.rapidapi.com/v1/geo/cities?types=CITY&countryIds=' . $_REQUEST['country'] . '&limit=10&sort=-population';
 	$header= ['x-rapidapi-host: wft-geo-db.p.rapidapi.com', 'x-rapidapi-key: ' . $apiKey];
 
 	$ch = curl_init();

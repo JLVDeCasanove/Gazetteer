@@ -15,8 +15,8 @@ $(window).on('load', function () {
 let map;
 let geojson;
 let selectedCountry;
-let cityGroup = L.layerGroup([]);
-let airportGroup = L.layerGroup([]);
+let cityMarkers = L.markerClusterGroup();
+let airportMarkers = L.markerClusterGroup();
 
 //tile layers
 const streets = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}", {
@@ -49,6 +49,8 @@ map = L.map('map', {
 
 //add layer controls
 layerControl = L.control.layers(baseLayers, null, { position: 'topleft' }).addTo(map);
+layerControl.addOverlay(cityMarkers, 'Cities');
+layerControl.addOverlay(airportMarkers, 'Airports');
 
 //-----------------modal buttons------------------------------
 
@@ -102,8 +104,9 @@ const handleSelectCountry = async (layer) => {
         }
     });
 
-    layerControl.removeLayer(cityGroup);
-    layerControl.removeLayer(airportGroup);
+    //clear marker layers
+    cityMarkers.clearLayers();
+    airportMarkers.clearLayers();
 
     layer.isSelected = true;
     //zoom to country
@@ -125,13 +128,14 @@ const handleSelectCountry = async (layer) => {
     
     //adding cities
     const cities = await getCities(layer)
-        .then((cities) => cityGroup = L.layerGroup(cities))
-        .then(() => layerControl.addOverlay(cityGroup, 'Cities'))
+        .then((cities) => cityMarkers.addLayers(cities));
+        //.then(() => layerControl.addOverlay(cityMarkers, 'Cities'));
 
     //adding airports
     const airports = await getAirports(layer)
-    .then((airports) => airportGroup = L.layerGroup(airports))
-    .then(() => layerControl.addOverlay(airportGroup, 'Airports'))
+    .then((airports) => airportMarkers.addLayers(airports));
+    //.then(() => layerControl.addOverlay(airportMarkers, 'Airports'));
+
 };
 
 //-----------------INFO PANE-----------------------------------------------
