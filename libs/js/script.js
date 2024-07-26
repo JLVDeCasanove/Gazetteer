@@ -19,6 +19,13 @@ let cityLayer;
 let poiLayer;
 let poiBounds;
 
+const handlePOSTError = () => {
+    $('#loader').hide();
+    if (selectedCountry) {
+        handleSelectCountry(selectedCountry);
+    }
+}
+
 /*
 //Add tile layer
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -58,6 +65,7 @@ layerControl = L.control.layers(baselayers, null, { position: 'topleft' }).addTo
 var infoBtn = L.easyButton("fa-info fa-xl", function (btn, map) {
     $("#exampleModal").modal("show");
   });
+
 
 infoBtn.addTo(map);
 
@@ -194,7 +202,7 @@ const getProps = async (layer) => {
         },
         error: function(jqXHR, textStatus, errorThrown) {
             console.log('POST request not fulfilled');
-            $('#loader').hide();
+            handlePOSTError();
         }
     });
 
@@ -241,7 +249,7 @@ const getCities = async (layer) => {
         },
         error: function(jqXHR, textStatus, errorThrown) {
             console.log('POST request not fulfilled');
-            $('#loader').hide();
+            handlePOSTError();
         }
     });
     return cityArr;
@@ -282,7 +290,7 @@ const getPois = async (latitude, longitude, country) => {
         },
         error: function(jqXHR, textStatus, errorThrown) {
             console.log('POST request not fulfilled');
-            $('#loader').hide();
+            handlePOSTError();
         }
     });
     return poiArr;
@@ -411,17 +419,6 @@ $.ajax({
                 onEachFeature: onEachFeature
             }).addTo(map);
 
-            //populate country list
-            const countryList = mapData.features;
-            const countryArr = [];
-            countryList.forEach((country) => {
-                countryArr.push(country.properties.name);
-            });
-            countryArr.sort();
-            countryArr.forEach((country) => {
-                $('#country-list').append('<option value=\"' + country + '\">' + country + '</option>');
-            });
-
             //Find initial location
             map.locate();
 
@@ -456,6 +453,34 @@ $.ajax({
     },
     error: function(jqXHR, textStatus, errorThrown) {
         console.log('POST request not fulfilled');
-        $('#loader').hide();
+        handlePOSTError();
+    }
+});
+
+//populating country list
+
+$.ajax({
+    url: "./libs/php/country-list.php",
+    type: 'POST',
+    dataType: 'json',
+    data: {},
+    success: function(result) {
+
+        console.log(JSON.stringify(result));
+        
+        if (result.status.name == "ok") {
+            countryArr = result.data;
+            countryArr.forEach((country) => {
+                $('#country-list').append('<option value=\"' + country + '\">' + country + '</option>');
+            });
+
+        } else {
+            console.log('error');
+        }
+    
+    },
+    error: function(jqXHR, textStatus, errorThrown) {
+        console.log('POST request not fulfilled');
+        handlePOSTError();
     }
 });
