@@ -15,6 +15,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lobster&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap">
+    <!--<link rel="stylesheet" href="http://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">-->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.css">
     <link rel="stylesheet" href="./libs/css/MarkerCluster.css">
     <link rel="stylesheet" href="./libs/css/MarkerCluster.Default.css">
@@ -34,119 +35,105 @@
 
     <!-------------------   MODALS   ------------------------------------------->
 
-    <!-- Modal 1 -->
-    <div id="exampleModal" class="modal" data-bs-backdrop="false" tabindex="-1">
+    <!-- NEWS MODAL -->
+    <div id="news-modal" class="modal" data-bs-backdrop="false" tabindex="-1">
       <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content shadow">
           <div class="modal-header bg-gradient text-white">
-            <h5 class="modal-title">Attributions</h5>
+            <h5 class="modal-title">Local News</h5>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-            <a href="https://www.leafletjs.com" target="_blank" title="leafletjs">Built using Leaflet</a><br>
-            <a href="https://www.openstreetmap.org/" target="_blank" title="OpenStreetMap">Maps tiles from OpenStreetMap</a><br>
-            <a href="https://www.geonames.org/" target="_blank" title="Geonames">Using data from geonames APIs</a><br>
-            <a href="http://geodb-cities-api.wirefreethought.com/" target="_blank" title="geoDB cities API">and from GeoDB Cities API</a><br>
-            <a href="https://flagsapi.com/" target="_blank" title="flagsapi">Flag images from flagsapi.com</a><br>
-            <a href="https://www.flaticon.com/free-icons/earth" target="_blank" title="earth icons">Earth icons created by Freepik - Flaticon</a>
+            <!--BODY HERE-->
           </div>
           <div class="modal-footer">
+            <!--ATTRIBUTION HERE-->
             <button type="button" class="btn btn-outline-success btn-sm" data-bs-dismiss="modal">Close</button>
           </div>
         </div>
       </div>
     </div>
 
-     <!-- Modal 2 -->
-     <div id="exampleModal" class="modal" data-bs-backdrop="false" tabindex="-1">
+    <!-- WEATHER MODAL -->
+    <div id="weather-modal" class="modal" data-bs-backdrop="false" tabindex="-1">
       <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content shadow">
-          <div class="modal-header bg-success bg-gradient text-white">
-            <h5 class="modal-title">Overview</h5>
+          <div class="modal-header bg-gradient text-white">
+            <h5 class="modal-title">Local Weather</h5>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-            
+            <!--BODY HERE-->
           </div>
           <div class="modal-footer">
+            <!--ATTRIBUTION HERE-->
             <button type="button" class="btn btn-outline-success btn-sm" data-bs-dismiss="modal">Close</button>
           </div>
         </div>
       </div>
     </div>
 
-     <!-- Modal 3 -->
-     <div id="exampleModal" class="modal" data-bs-backdrop="false" tabindex="-1">
-      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content shadow">
-          <div class="modal-header bg-success bg-gradient text-white">
-            <h5 class="modal-title">Overview</h5>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-outline-success btn-sm" data-bs-dismiss="modal">Close</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-     <!-- Modal 4 -->
-     <div id="exampleModal" class="modal" data-bs-backdrop="false" tabindex="-1">
-      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content shadow">
-          <div class="modal-header bg-success bg-gradient text-white">
-            <h5 class="modal-title">Overview</h5>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-outline-success btn-sm" data-bs-dismiss="modal">Close</button>
+      <!-- CURRENCY MODAL -->
+      <div id="currency-modal" class="modal" data-bs-backdrop="false" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+          <div class="modal-content shadow">
+            <div class="modal-header bg-gradient text-white">
+              <h5 class="modal-title">Exchange Rates</h5>
+              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <!--BODY HERE-->
+            </div>
+            <div class="modal-footer">
+              <!--ATTRIBUTION HERE-->
+              <button type="button" class="btn btn-outline-success btn-sm" data-bs-dismiss="modal">Close</button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-     <!-- Modal 5 -->
-     <div id="exampleModal" class="modal" data-bs-backdrop="false" tabindex="-1">
-      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content shadow">
-          <div class="modal-header bg-success bg-gradient text-white">
-            <h5 class="modal-title">Overview</h5>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-outline-success btn-sm" data-bs-dismiss="modal">Close</button>
+      <!-- WIKI MODAL -->
+      <div id="wiki-modal" class="modal" data-bs-backdrop="false" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+          <div class="modal-content shadow">
+            <div class="modal-header bg-gradient text-white">
+              <h5 class="modal-title">Wikipedia Entries</h5>
+              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <!--BODY HERE-->
+            </div>
+            <div class="modal-footer">
+              <!--ATTRIBUTION HERE-->
+              <button type="button" class="btn btn-outline-success btn-sm" data-bs-dismiss="modal">Close</button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-     <!-- Modal 6 -->
-     <div id="exampleModal" class="modal" data-bs-backdrop="false" tabindex="-1">
-      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content shadow">
-          <div class="modal-header bg-success bg-gradient text-white">
-            <h5 class="modal-title">Overview</h5>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-outline-success btn-sm" data-bs-dismiss="modal">Close</button>
+      <!-- ATTRIBUTIONS MODAL -->
+      <div id="attributions-modal" class="modal" data-bs-backdrop="false" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+          <div class="modal-content shadow">
+            <div class="modal-header bg-gradient text-white">
+              <h5 class="modal-title">Attributions</h5>
+              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <a href="https://www.leafletjs.com" target="_blank" title="leafletjs">Built using Leaflet</a><br>
+              <a href="https://www.openstreetmap.org/" target="_blank" title="OpenStreetMap">Maps tiles from OpenStreetMap</a><br>
+              <a href="https://www.geonames.org/" target="_blank" title="Geonames">Using data from geonames APIs</a><br>
+              <a href="http://geodb-cities-api.wirefreethought.com/" target="_blank" title="geoDB cities API">and from GeoDB Cities API</a><br>
+              <a href="https://flagsapi.com/" target="_blank" title="flagsapi">Flag images from flagsapi.com</a><br>
+              <a href="https://www.flaticon.com/free-icons/earth" target="_blank" title="earth icons">Earth icons created by Freepik - Flaticon</a>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-outline-success btn-sm" data-bs-dismiss="modal">Close</button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-
+      
     <!-- Loader -->
 
     <div id="loader"></div>
@@ -154,6 +141,7 @@
     <script type="application/javascript" src="./libs/js/jquery-3.7.1.min.js"></script>
     <script type="application/javascript" src="./libs/js/bootstrap.min.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://kit.fontawesome.com/35118ad5da.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.js"></script>
     <script src="./libs/js/leaflet.markercluster.js"></script>
     <script type="application/javascript" src="./libs/js/script.js"></script>

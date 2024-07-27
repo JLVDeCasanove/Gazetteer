@@ -54,12 +54,60 @@ layerControl.addOverlay(airportMarkers, 'Airports');
 
 //-----------------modal buttons------------------------------
 
-var infoBtn = L.easyButton("fa-info fa-xl", function (btn, map) {
-    $("#exampleModal").modal("show");
+const newsBtn = L.easyButton("fa-solid fa-newspaper fa-xl", (btn, map) => {
+    $("#news-modal").modal("show");
   });
 
 
-infoBtn.addTo(map);
+newsBtn.addTo(map);
+
+const weatherBtn = L.easyButton("fa-solid fa-cloud-sun-rain fa-xl", (btn, map) => {
+    $("#weather-modal").modal("show");
+  });
+
+
+weatherBtn.addTo(map);
+
+const currencyBtn = L.easyButton("fa-solid fa-coins fa-xl", (btn, map) => {
+    $("#currency-modal").modal("show");
+  });
+
+
+currencyBtn.addTo(map);
+
+
+const wikiBtn = L.easyButton("fa-solid fa-w fa-xl", (btn, map) => {
+    $("#wiki-modal").modal("show");
+  });
+
+
+wikiBtn.addTo(map);
+
+const attributionsBtn = L.easyButton("fa-solid fa-copyright fa-xl", (btn, map) => {
+    $("#attributions-modal").modal("show");
+  });
+
+attributionsBtn.addTo(map);
+
+//Icons for markers
+
+const cityIcon = L.divIcon({
+    html: '<i class="fa-solid fa-city fa-2xl"></i>',
+    iconSize: [32, 32],
+    className: 'city-icon'
+});
+
+const cityIconCapital = L.divIcon({
+    html: '<i class="fa-solid fa-star fa-2xl"></i>',
+    iconSize: [32, 32],
+    className: 'city-icon-capital'
+});
+
+const airportIcon = L.divIcon({
+    html: '<i class="fa-solid fa-plane fa-2xl"></i>',
+    iconSize: [32, 32],
+    className: 'airport-icon'
+});
 
 //-----------------MAP STYLES---------------------------------
 
@@ -131,11 +179,12 @@ const handleSelectCountry = async (layer) => {
         .then((cities) => cityMarkers.addLayers(cities));
         //.then(() => layerControl.addOverlay(cityMarkers, 'Cities'));
 
+    /*
     //adding airports
     const airports = await getAirports(layer)
     .then((airports) => airportMarkers.addLayers(airports));
     //.then(() => layerControl.addOverlay(airportMarkers, 'Airports'));
-
+    */
 };
 
 //-----------------INFO PANE-----------------------------------------------
@@ -224,8 +273,16 @@ const getCities = async (layer) => {
             
             if (result.status.name == "ok") {
                 cityArr = [];
+                let checkingArr = [];
                 result.data.forEach((city) => {
-                    cityArr.push(L.marker([city.latitude, city.longitude]).bindPopup('<h5>' + city.name + '</h5>'));
+                    if (!checkingArr.includes(city.name)) {
+                        if (city.name === layer.feature.properties.capital) {
+                            cityArr.push(L.marker([city.latitude, city.longitude], {icon: cityIconCapital}).bindPopup('<i class="fa-regular fa-star"></i><h5>' + city.name + '</h5>'));
+                        } else {
+                            cityArr.push(L.marker([city.latitude, city.longitude], {icon: cityIcon}).bindPopup('<h5>' + city.name + '</h5>'));
+                        }
+                        checkingArr.push(city.name);
+                    }
                 });
 
             } else {
@@ -258,7 +315,7 @@ const getAirports = async (layer) => {
             if (result.status.name == "ok") {
                 airportArr = [];
                 result.data.forEach((airport) => {
-                    airportArr.push(L.marker([airport.latitude, airport.longitude]).bindPopup('<h5>' + airport.name + '</h5>'));
+                    airportArr.push(L.marker([airport.latitude, airport.longitude], {icon: airportIcon}).bindPopup('<h5>' + airport.name + '</h5>'));
                 });
 
             } else {

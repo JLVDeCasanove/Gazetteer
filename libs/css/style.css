@@ -157,6 +157,18 @@ a.popup {
     background-color: #1d234b;
 }
 
+.fa-city {
+    color: white;
+}
+
+.fa-plane {
+    color: #a1d6eb;
+}
+
+.fa-star {
+    color: yellow;
+}
+
 /* Media queries for small screens */
 
 @media only screen and (max-width: 700px) {
