@@ -61,6 +61,7 @@ const newsBtn = L.easyButton("fa-solid fa-newspaper fa-xl", (btn, map) => {
 newsBtn.addTo(map);
 
 const timeBtn = L.easyButton("fa-solid fa-clock fa-xl", (btn, map) => {
+    getTime(selectedCountry);
     $("#time-modal").modal("show");
   });
 
@@ -183,13 +184,14 @@ const handleSelectCountry = async (layer) => {
     const cities = await getCities(layer)
         .then((cities) => cityMarkers.addLayers(cities));
 
-
+/*
     //adding airports
     const airports = await getAirports(layer)
     .then((airports) => airportMarkers.addLayers(airports));
-    //.then(() => layerControl.addOverlay(airportMarkers, 'Airports'));
+*/
 
 };
+
 
 //-----------------INFO PANE-----------------------------------------------
 
@@ -282,7 +284,9 @@ const getCities = async (layer) => {
                 let checkingArr = [];
                 result.data.forEach((city) => {
                     if (!checkingArr.includes(city.name)) {
-                        if (city.name === layer.feature.properties.capital || city.name === 'Reykjavík' || city.name === 'Cape Town') {
+                        if (city.name === layer.feature.properties.capital || city.name === 'Reykjavík' || city.name === 'Delhi') {
+                            layer.feature.properties.capitalLat = city.latitude;
+                            layer.feature.properties.capitalLng = city.longitude;
                             cityArr.push(L.marker([city.latitude, city.longitude], {icon: cityIconCapital}).bindPopup('<i class="fa-regular fa-star"></i><h5>' + city.name + '</h5>'));
                         } else {
                             cityArr.push(L.marker([city.latitude, city.longitude], {icon: cityIcon}).bindPopup('<h5>' + city.name + '</h5>'));
@@ -445,6 +449,50 @@ const getNews = (layer) => {
         }
     });
 }
+
+//Local Time Modal
+
+const getTime = (layer) => {
+    const layerInfo = layer.feature.properties;
+    $('#time-title').html('Loading...');
+    $('#clock').html('');
+    $('#time-digital').html('');
+    $.ajax({
+        url: "./libs/php/timezone.php",
+        type: 'POST',
+        dataType: 'json',
+        data: {
+            latitude: layerInfo.capitalLat,
+            longitude: layerInfo.capitalLng
+        },
+        success: function(result) {
+
+            console.log(JSON.stringify(result));
+            
+            if (result.status.name == "ok") {
+                timezoneInfo = result.data;  
+                $('#time-title').html(timezoneInfo.timezoneId);
+                $('#time-digital').html('Put in digital clock here');
+                $(function () {
+                    $("#clock").htAnalogClock({
+
+                    }, {
+                        timezone: timezoneInfo.timezoneId
+                    });
+                  });
+            } else {
+                console.log('error');
+            }
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            $('#time-title').html('Timezone not found.');
+            console.log('POST request not fulfilled');
+            handlePOSTError();
+        }
+    });
+}
+
+
 
 //------------------EVENT LISTENERS-----------------------------------------
 
