@@ -5,7 +5,6 @@ $(window).on('load', function () {
         $('#loader').delay(1000).fadeOut('slow', function () {
             $(this).hide();
         });
-        $('#loader').css('background-color', '#ffffff29');
     }
 });
 
@@ -55,6 +54,7 @@ layerControl.addOverlay(airportMarkers, 'Airports');
 //-----------------modal buttons------------------------------
 
 const newsBtn = L.easyButton("fa-solid fa-newspaper fa-xl", (btn, map) => {
+    getNews();
     $("#news-modal").modal("show");
   });
 
@@ -77,6 +77,7 @@ currencyBtn.addTo(map);
 
 
 const wikiBtn = L.easyButton("fa-solid fa-w fa-xl", (btn, map) => {
+    getWiki(selectedCountry);
     $("#wiki-modal").modal("show");
   });
 
@@ -141,6 +142,7 @@ const selectedCountryStyle = {
 //-----------------Country Selection Handler------------------
 
 const handleSelectCountry = async (layer) => {
+    $('#loader').show();
     //Set current target
     selectedCountry = layer;
 
@@ -172,12 +174,12 @@ const handleSelectCountry = async (layer) => {
 
     //Update country info
     const props = await getProps(layer)
-        .then((props) => countryInfo.update(props));
+        .then((props) => countryInfo.update(props))
+        .then(() => $('#loader').hide());
     
     //adding cities
     const cities = await getCities(layer)
         .then((cities) => cityMarkers.addLayers(cities));
-        //.then(() => layerControl.addOverlay(cityMarkers, 'Cities'));
 
     /*
     //adding airports
@@ -213,6 +215,8 @@ countryInfo.update = function (props) {
         + '<p><b>Area:</b> ' + area + ' km&sup2;</p>'
         + '<p><b>Population:</b> ' + population + '</p></div>';
 };
+
+//Ajax calls-------------
 
 //get properties for info pane
 const getProps = async (layer) => {
@@ -331,7 +335,71 @@ const getAirports = async (layer) => {
     return airportArr;
 }
 
+//Getting wikipedia info
 
+const formatCountry = (country) => {
+    let formattedCountry;
+    if (country.includes("d'Ivoire")) {
+        formattedCountry = 'Ivory%20Coast';
+    } else if (country === 'Dem. Rep. Korea') {
+        formattedCountry = 'North%20Korea';
+    } else if (country === 'Lao PDR') {
+        formattedCountry = 'Laos';
+    } else if (country === 'Guinea-Bissau') {
+        formattedCountry = 'Guinea%20Bissau';
+    } else if (country === 'Timor-Leste') {
+        formattedCountry = 'East%20Timor';
+    } else {
+        formattedCountry = country
+            .replaceAll(' ', '%20')
+            .replace('Dem.', 'Democratic')
+            .replace('Rep.', 'Republic')
+            .replace('W.', 'Western')
+            .replace('Is.', 'Islands')
+            .replace('Herz.', 'Herzegovina')
+            .replace('N.', 'Northern')
+            .replace('Eq.', 'Equatorial')
+            .replace('S.', 'South');
+
+    }
+    return formattedCountry;
+}
+
+const getWiki = (layer) => {
+    $('#wiki-title').html('Loading');
+    $('#wiki-summary').html('');
+    $('#wiki-link').attr('href', 'https://www.wikipedia.org/');
+    const countryRequest = layer.feature.properties.name;
+    const formattedCountry = formatCountry(countryRequest);
+    $.ajax({
+        url: "./libs/php/wikipedia.php",
+        type: 'POST',
+        dataType: 'json',
+        data: {
+            country: formattedCountry
+        },
+        success: function(result) {
+
+            console.log(JSON.stringify(result));
+            
+            if (result.status.name == "ok") {
+                const wikiEntry = result.data;
+                $('#wiki-title').html(wikiEntry.title);
+                $('#wiki-summary').html(wikiEntry.summary);
+                $('#wiki-link').attr('href', 'http://' + wikiEntry.wikipediaUrl);
+            } else {
+                console.log('error');
+            }
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            console.log('POST request not fulfilled');
+            $('#wiki-title').html('Entry not found');
+            $('#wiki-summary').html('Please go to <a href="https://www.wikipedia.org/">https://www.wikipedia.org/</a> and search manually.');
+            $('#wiki-link').attr('href', 'https://www.wikipedia.org/');
+            handlePOSTError();
+        }
+    });
+}
 //------------------EVENT LISTENERS-----------------------------------------
 
 //Selecting a country with the select dropdown box
@@ -441,6 +509,7 @@ $.ajax({
                     }
                 });
                 handleSelectCountry(country);
+                $('#loader').css('background', '#ffffff40');
             }
             map.on('locationfound', onLocationFound);
             //Not Found

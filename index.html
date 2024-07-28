@@ -15,12 +15,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lobster&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap">
-    <!--<link rel="stylesheet" href="http://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">-->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.css">
     <link rel="stylesheet" href="./libs/css/MarkerCluster.css">
     <link rel="stylesheet" href="./libs/css/MarkerCluster.Default.css">
     <link rel="stylesheet" href="./libs/css/style.css">
-
   </head>
 
   <body>
@@ -44,7 +42,6 @@
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-            <!--BODY HERE-->
           </div>
           <div class="modal-footer">
             <!--ATTRIBUTION HERE-->
@@ -97,14 +94,22 @@
         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
           <div class="modal-content shadow">
             <div class="modal-header bg-gradient text-white">
-              <h5 class="modal-title">Wikipedia Entries</h5>
+              <h5 class="modal-title">Wikipedia</h5>
               <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-              <!--BODY HERE-->
+              <table class="table">
+                <tr>
+                  <th class="text-left align-middle" id="wiki-title"></th>
+                  <td class="text-right align-middle"><a id="wiki-link" target="_blank"><i class="fa-solid fa-w"></i></a></td>
+                </tr>
+                <tr class="remove-border-bottom">
+                  <td class="text-left align-middle" id="wiki-summary" colspan="2"></td>
+                </tr>
+              </table>
             </div>
             <div class="modal-footer">
-              <!--ATTRIBUTION HERE-->
+              <p>API:</p><a href="https://www.geonames.org/">geonames.org</a>
               <button type="button" class="btn btn-outline-success btn-sm" data-bs-dismiss="modal">Close</button>
             </div>
           </div>
