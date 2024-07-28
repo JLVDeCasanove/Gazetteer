@@ -174,6 +174,16 @@ a.popup {
     border-bottom: white;
 }
 
+#newspaper-green {
+    color: rgb(87, 185, 87);
+}
+
+.table-bottom-border-on {
+    border-bottom: solid;
+    border-color: #a6accf;
+    margin: 10px;
+    padding: 10px;
+}
 
 /* Media queries for small screens */
 

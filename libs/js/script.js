@@ -54,24 +54,27 @@ layerControl.addOverlay(airportMarkers, 'Airports');
 //-----------------modal buttons------------------------------
 
 const newsBtn = L.easyButton("fa-solid fa-newspaper fa-xl", (btn, map) => {
-    getNews();
+    getNews(selectedCountry);
     $("#news-modal").modal("show");
   });
 
-
 newsBtn.addTo(map);
+
+const timeBtn = L.easyButton("fa-solid fa-clock fa-xl", (btn, map) => {
+    $("#time-modal").modal("show");
+  });
+
+timeBtn.addTo(map);
 
 const weatherBtn = L.easyButton("fa-solid fa-cloud-sun-rain fa-xl", (btn, map) => {
     $("#weather-modal").modal("show");
   });
-
 
 weatherBtn.addTo(map);
 
 const currencyBtn = L.easyButton("fa-solid fa-coins fa-xl", (btn, map) => {
     $("#currency-modal").modal("show");
   });
-
 
 currencyBtn.addTo(map);
 
@@ -80,7 +83,6 @@ const wikiBtn = L.easyButton("fa-solid fa-w fa-xl", (btn, map) => {
     getWiki(selectedCountry);
     $("#wiki-modal").modal("show");
   });
-
 
 wikiBtn.addTo(map);
 
@@ -181,12 +183,12 @@ const handleSelectCountry = async (layer) => {
     const cities = await getCities(layer)
         .then((cities) => cityMarkers.addLayers(cities));
 
-    /*
+
     //adding airports
     const airports = await getAirports(layer)
     .then((airports) => airportMarkers.addLayers(airports));
     //.then(() => layerControl.addOverlay(airportMarkers, 'Airports'));
-    */
+
 };
 
 //-----------------INFO PANE-----------------------------------------------
@@ -280,7 +282,7 @@ const getCities = async (layer) => {
                 let checkingArr = [];
                 result.data.forEach((city) => {
                     if (!checkingArr.includes(city.name)) {
-                        if (city.name === layer.feature.properties.capital) {
+                        if (city.name === layer.feature.properties.capital || city.name === 'Reykjavík' || city.name === 'Cape Town') {
                             cityArr.push(L.marker([city.latitude, city.longitude], {icon: cityIconCapital}).bindPopup('<i class="fa-regular fa-star"></i><h5>' + city.name + '</h5>'));
                         } else {
                             cityArr.push(L.marker([city.latitude, city.longitude], {icon: cityIcon}).bindPopup('<h5>' + city.name + '</h5>'));
@@ -365,8 +367,9 @@ const formatCountry = (country) => {
     return formattedCountry;
 }
 
+//wikipedia modal
 const getWiki = (layer) => {
-    $('#wiki-title').html('Loading');
+    $('#wiki-title').html('Loading...');
     $('#wiki-summary').html('');
     $('#wiki-link').attr('href', 'https://www.wikipedia.org/');
     const countryRequest = layer.feature.properties.name;
@@ -400,6 +403,49 @@ const getWiki = (layer) => {
         }
     });
 }
+
+//News modal
+const getNews = (layer) => {
+    $('news-body').html('<p>Loading Local News...</p>');
+    $.ajax({
+        url: "./libs/php/news.php",
+        type: 'POST',
+        dataType: 'json',
+        data: {
+            country: layer.feature.properties.iso_a2
+        },
+        success: function(result) {
+
+            console.log(JSON.stringify(result));
+            
+            if (result.status.name == "ok") {
+                $('#news-body').html('');
+                const articles = result.data.articles;
+                if (articles[0]) {
+                    articles.forEach((article) => {
+                        $('#news-body').append(
+                            '<tr><th colspan="3"><i class="fa-regular fa-newspaper fa-xl" id="newspaper-green"></i>  ' + article.title + '</th></tr>'
+                            + '<tr class="table-bottom-border-on"><td>Source: ' + article.source.name + '</td>'
+                            + '<td>Date: ' + new Date(article.publishedAt).toDateString() + '</td>'
+                            + '<td><a href="' + article.url + '" target="blank">Full Article</a></td></tr>'
+                        );
+                    });
+                } else {
+                    $('#news-body').html('<tr><th>No Local News Found</th></tr>');
+                }
+                
+            } else {
+                console.log('error');
+            }
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            console.log('POST request not fulfilled');
+            $('#news-body').html('<tr><th>No Local News Found</th></tr>');
+            handlePOSTError();
+        }
+    });
+}
+
 //------------------EVENT LISTENERS-----------------------------------------
 
 //Selecting a country with the select dropdown box
