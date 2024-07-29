@@ -47,7 +47,7 @@
             </table>
           </div>
           <div class="modal-footer">
-            <!--ATTRIBUTION HERE-->
+            <p>API: </p><a href="https://newsapi.org/" target="_blank" title="News API">News API</a>
             <button type="button" class="btn btn-outline-success btn-sm" data-bs-dismiss="modal">Close</button>
           </div>
         </div>
@@ -70,7 +70,7 @@
             </div>
           </div>
           <div class="modal-footer">
-            <!--ATTRIBUTION HERE-->
+            <p>API:</p><a href="https://www.geonames.org/">geonames.org</a>
             <button type="button" class="btn btn-outline-success btn-sm" data-bs-dismiss="modal">Close</button>
           </div>
         </div>
@@ -86,10 +86,61 @@
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-            <!--BODY HERE-->
+            <table class="table table-striped">
+              <tr><th class="text-center" colspan="3" id="weather-title"></th></tr>
+              <!-- TEMPERATURE -->
+              <tr>
+                <td class="text-center"><i class="fa-solid fa-temperature-half fa-xl icon-green-custom"></i></td>
+                <td>Temperature</td>
+                <td id="weather-temperature" class="text-end">
+                </td>
+              </tr>
+              <!-- CONDITION -->
+              <tr>
+                <td class="text-center"><i class="fa-solid fa-cloud-sun-rain fa-xl icon-green-custom"></i></td>
+                <td>Conditions</td>
+                <td id="weather-condition" class="text-end">
+                </td>
+              </tr>
+              <!-- CLOUDS -->
+              <tr>
+                <td class="text-center"><i class="fa-solid fa-cloud fa-xl icon-green-custom"></i></td>
+                <td>Clouds</td>
+                <td id="weather-clouds" class="text-end">
+                </td>
+              </tr>
+              <!-- HUMIDITY -->
+              <tr>
+                <td class="text-center"><i class="fa-solid fa-droplet fa-xl icon-green-custom"></i></td>
+                <td>Humidity</td>
+                <td id="weather-humidity" class="text-end">
+                </td>
+              </tr>
+              <!-- WINDSPEED -->
+              <tr>
+                <td class="text-center"><i class="fa-solid fa-wind fa-xl icon-green-custom"></i></td>
+                <td>Windspeed</td>
+                <td id="weather-windspeed" class="text-end">
+                </td>
+              </tr>
+              <!-- STATION -->
+              <tr>
+                <td class="text-center"><i class="fa-solid fa-tower-observation fa-xl icon-green-custom"></i></td>
+                <td>Station</td>
+                <td id="weather-station" class="text-end">
+                </td>
+              </tr>
+              <!-- DATE TIME -->
+              <tr>
+                <td class="text-center"><i class="fa-solid fa-calendar fa-xl icon-green-custom"></i></td>
+                <td>Observation at</td>
+                <td id="weather-datetime" class="text-end">
+                </td>
+              </tr>
+            </table>
           </div>
           <div class="modal-footer">
-            <!--ATTRIBUTION HERE-->
+            <p>API:</p><a href="https://www.geonames.org/">geonames.org</a>
             <button type="button" class="btn btn-outline-success btn-sm" data-bs-dismiss="modal">Close</button>
           </div>
         </div>
@@ -152,10 +203,14 @@
             </div>
             <div class="modal-body">
               <a href="https://www.leafletjs.com" target="_blank" title="leafletjs">Built using Leaflet</a><br>
-              <a href="https://www.openstreetmap.org/" target="_blank" title="OpenStreetMap">Maps tiles from OpenStreetMap</a><br>
+              <a href="https://github.com/Leaflet/Leaflet.markercluster" target="_blank" title="marker cluster">With the Marker Cluster Plugin</a><br>
+              <a href="https://www.arcgis.com/" target="_blank" title="ArcGIS Online">Maps tiles from ArcGIS Online</a><br>
               <a href="https://www.geonames.org/" target="_blank" title="Geonames">Using data from geonames APIs</a><br>
-              <a href="http://geodb-cities-api.wirefreethought.com/" target="_blank" title="geoDB cities API">and from GeoDB Cities API</a><br>
+              <a href="http://geodb-cities-api.wirefreethought.com/" target="_blank" title="geoDB cities API">from GeoDB Cities API</a><br>
+              <a href="https://api-ninjas.com/api/airlines" target="_blank" title="API Ninjas">from API Ninjas</a><br>
+              <a href="https://newsapi.org/" target="_blank" title="News API">from News API</a><br>
               <a href="https://flagsapi.com/" target="_blank" title="flagsapi">Flag images from flagsapi.com</a><br>
+              <a href="https://www.jqueryscript.net/time-clock/analog-clock-timezone.html" target="_blank" title="htAnalogClock">Clock from htAnalogClock by dexise</a><br>
               <a href="https://www.flaticon.com/free-icons/earth" target="_blank" title="earth icons">Earth icons created by Freepik - Flaticon</a>
             </div>
             <div class="modal-footer">

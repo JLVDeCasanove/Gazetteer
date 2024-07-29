@@ -68,6 +68,7 @@ const timeBtn = L.easyButton("fa-solid fa-clock fa-xl", (btn, map) => {
 timeBtn.addTo(map);
 
 const weatherBtn = L.easyButton("fa-solid fa-cloud-sun-rain fa-xl", (btn, map) => {
+    getWeather(selectedCountry);
     $("#weather-modal").modal("show");
   });
 
@@ -238,9 +239,13 @@ const getProps = async (layer) => {
             
             if (result.status.name == "ok") {
                 layer.feature.properties.continent = result.data.continentName;
-                layer.feature.properties.capital = result.data.capital;
-                layer.feature.properties.area = result.data.areaInSqKm;
-                layer.feature.properties.population = result.data.population;
+                if (layer.feature.properties.iso_a2 === 'KZ') {
+                    layer.feature.properties.capital = 'Astana';
+                } else {
+                    layer.feature.properties.capital = result.data.capital;
+                }
+                layer.feature.properties.area = Number(result.data.areaInSqKm).toLocaleString();
+                layer.feature.properties.population = Number(result.data.population).toLocaleString();
             } else {
                 console.log('error');
             }
@@ -268,6 +273,7 @@ countryInfo.addTo(map);
 //Get city info
 const getCities = async (layer) => {
     let cityArr = [];
+    const layerData = layer.feature.properties;
     await $.ajax({
         url: "./libs/php/cities.php",
         type: 'POST',
@@ -284,9 +290,9 @@ const getCities = async (layer) => {
                 let checkingArr = [];
                 result.data.forEach((city) => {
                     if (!checkingArr.includes(city.name)) {
-                        if (city.name === layer.feature.properties.capital || city.name === 'Reykjavík' || city.name === 'Delhi') {
-                            layer.feature.properties.capitalLat = city.latitude;
-                            layer.feature.properties.capitalLng = city.longitude;
+                        if (city.name === layerData.capital || city.name === 'Reykjavík' || city.name === 'Delhi'|| city.name === 'City of Brussels'|| city.name === 'Naypyidaw') {
+                            layerData.capitalLat = city.latitude;
+                            layerData.capitalLng = city.longitude;
                             cityArr.push(L.marker([city.latitude, city.longitude], {icon: cityIconCapital}).bindPopup('<i class="fa-regular fa-star"></i><h5>' + city.name + '</h5>'));
                         } else {
                             cityArr.push(L.marker([city.latitude, city.longitude], {icon: cityIcon}).bindPopup('<h5>' + city.name + '</h5>'));
@@ -294,6 +300,11 @@ const getCities = async (layer) => {
                         checkingArr.push(city.name);
                     }
                 });
+                if (layerData.iso_a2 === 'US') {
+                    cityArr.push(L.marker([38.89511, -77.03637], {icon: cityIconCapital}).bindPopup('<i class="fa-regular fa-star"></i><h5>Washington</h5>'));
+                    layerData.capitalLat = 38.89511;
+                    layerData.capitalLng = -77.03637;
+                }
 
             } else {
                 console.log('error');
@@ -428,7 +439,7 @@ const getNews = (layer) => {
                 if (articles[0]) {
                     articles.forEach((article) => {
                         $('#news-body').append(
-                            '<tr><th colspan="3"><i class="fa-regular fa-newspaper fa-xl" id="newspaper-green"></i>  ' + article.title + '</th></tr>'
+                            '<tr><th colspan="3"><i class="fa-regular fa-newspaper fa-xl icon-green-custom"></i>  ' + article.title + '</th></tr>'
                             + '<tr class="table-bottom-border-on"><td>Source: ' + article.source.name + '</td>'
                             + '<td>Date: ' + new Date(article.publishedAt).toDateString() + '</td>'
                             + '<td><a href="' + article.url + '" target="blank">Full Article</a></td></tr>'
@@ -493,6 +504,67 @@ const getTime = (layer) => {
 }
 
 
+// Weather Modal
+
+const getWeather = (layer) => {
+    layerInfo = layer.feature.properties;
+    $('#weather-title').html('Loading...')
+    $('#weather-temperature').hide();
+    $('#weather-condition').hide();
+    $('#weather-clouds').hide();
+    $('#weather-humidity').hide();
+    $('#weather-windspeed').hide();
+    $('#weather-station').hide();
+    $('#weather-datetime').hide();
+
+    $.ajax({
+        url: "./libs/php/weather.php",
+        type: 'POST',
+        dataType: 'json',
+        data: {
+            latitude: layerInfo.capitalLat,
+            longitude: layerInfo.capitalLng
+        },
+        success: function(result) {
+
+            console.log(JSON.stringify(result));
+            if (result.status.name == "ok") {
+                $('#weather-title').html('Weather in ' + layerInfo.capital);
+
+                $('#weather-temperature').html(result['data']['temperature'] + '&degC');
+                if (result['data']['weatherCondition'] && result['data']['weatherCondition'] !== 'n/a') {
+                    $('#weather-condition').html(result['data']['weatherCondition']);
+                } else {
+                    $('#weather-condition').html('N/A');
+                }
+                $('#weather-clouds').html(result['data']['clouds']);
+                $('#weather-humidity').html(result['data']['humidity'] + '&#37');
+                $('#weather-windspeed').html(result['data']['windSpeed'] + ' knots');
+                $('#weather-station').html(result['data']['stationName']);
+                $('#weather-datetime').html(new Date(result['data']['datetime']).toLocaleString());
+                $('#weather-temperature').show();
+                $('#weather-condition').show();
+                $('#weather-clouds').show();
+                $('#weather-humidity').show();
+                $('#weather-windspeed').show();
+                $('#weather-station').show();
+                $('#weather-datetime').show();
+            }
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            console.log('POST request not fulfilled');
+            $('#weather-title').html('No Observation Found')
+            $('#weather-temperature').hide();
+            $('#weather-condition').hide();
+            $('#weather-clouds').hide();
+            $('#weather-humidity').hide();
+            $('#weather-windspeed').hide();
+            $('#weather-station').hide();
+            $('#weather-datetime').hide();
+            handlePOSTError();
+        }
+    }); 
+}
 
 //------------------EVENT LISTENERS-----------------------------------------
 
