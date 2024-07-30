@@ -614,11 +614,15 @@ const getWeather = (layer) => {
 
 //Button and modal handler
 const currencyBtn = L.easyButton("fa-solid fa-coins fa-xl", (btn, map) => {
+    handleCurrencyButton();
+    $("#currency-modal").modal("show");
+  });
+
+const handleCurrencyButton = async () => {
     //populate the select lists if empty
     if (!currencyListPopulated) {
-        populateCurrencyList();
+        await populateCurrencyList();
     } else {
-        //set select lists to from convert initial country and to selected country
         $('#currency-from').val(initialCountry.feature.properties.currencyCode);
         $('#currency-to').val(selectedCountry.feature.properties.currencyCode);
     }
@@ -637,12 +641,11 @@ const currencyBtn = L.easyButton("fa-solid fa-coins fa-xl", (btn, map) => {
         //call ajax and update values
         getExchangeRate(exFrom, exTo, $('#number-from').val());
     }
-    $("#currency-modal").modal("show");
-  });
+}
 
 //Ajax call for currency list population
-const populateCurrencyList = () => {
-    $.ajax({
+const populateCurrencyList = async () => {
+    await $.ajax({
         url: "./libs/php/currency-list.php",
         type: 'POST',
         dataType: 'json',
@@ -657,9 +660,9 @@ const populateCurrencyList = () => {
                     $('#currency-from').append('<option>' + cCode + '</option>');
                     $('#currency-to').append('<option>' + cCode + '</option>');
                 })
+                currencyListPopulated = true;
                 $('#currency-from').val(initialCountry.feature.properties.currencyCode);
                 $('#currency-to').val(selectedCountry.feature.properties.currencyCode);
-                currencyListPopulated = true;
             } else {
                 console.log('error');
             }
