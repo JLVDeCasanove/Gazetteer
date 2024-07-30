@@ -7,7 +7,7 @@
 
 	$executionStartTime = microtime(true);
 
-	$url='https://currency-conversion-and-exchange-rates.p.rapidapi.com/convert?from=' . $_REQUEST['exchangeFrom'] . '&to=' . $_REQUEST['exchangeTo'] . '&amount=1';
+	$url='https://currency-conversion-and-exchange-rates.p.rapidapi.com/convert?from=' . $_REQUEST['exchangeFrom'] . '&to=' . $_REQUEST['exchangeTo'] . '&amount=' . $_REQUEST['amountToExchange'];
 	$header= ['x-rapidapi-host: currency-conversion-and-exchange-rates.p.rapidapi.com', 'x-rapidapi-key: ' . $apiKey];
 
 	$ch = curl_init();

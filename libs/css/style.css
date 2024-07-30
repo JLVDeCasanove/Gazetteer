@@ -49,7 +49,7 @@
     }
 }
 
-/* Leaflet */
+/* General */
 
 body {
     border: 0;
@@ -64,6 +64,69 @@ body {
 h4 {
     margin: 0;
 }
+
+/* Leaflet */
+
+#map {
+    height: 100vh;
+    width: 100vw;
+    border: 0;
+    padding: 0;
+    margin: 0;
+}
+
+/* Country info feature */
+
+.country-info {
+    padding: 6px 8px;
+    font-size: 12pt;
+    background-color: #462255;
+    color: white;
+    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    border-radius: 5px;
+    text-align: center;
+}
+
+p.country-info {
+    margin-top: 3px;
+    padding-top: 5px;
+    margin-bottom: 3px;
+    padding-bottom: 5px;
+}
+
+/* Map icons and popups */
+
+.fa-city {
+    color: white;
+}
+
+.fa-plane {
+    color: #a1d6eb;
+}
+
+.fa-star {
+    color: yellow;
+}
+
+.leaflet-popup-tip {
+    background-color: #462255;
+    color: white;
+    border-radius: 5px;
+    text-align: center;
+}
+
+.leaflet-popup-content-wrapper {
+    background-color: #462255;
+    color: white;
+    border-radius: 5px;
+    text-align: center;
+}
+
+a.popup {
+    color: white;
+}
+
+/* Country Select Box */
 
 #select-container {
     position: fixed;
@@ -94,50 +157,8 @@ h4 {
     border: 6px solid transparent;
     border-color: #fff transparent transparent transparent;
   }
-  
 
-#map {
-    height: 100vh;
-    width: 100vw;
-    border: 0;
-    padding: 0;
-    margin: 0;
-}
-
-.country-info {
-    padding: 6px 8px;
-    font-size: 12pt;
-    background-color: #462255;
-    color: white;
-    box-shadow: 0 0 15px rgba(0,0,0,0.2);
-    border-radius: 5px;
-    text-align: center;
-}
-
-p.country-info {
-    margin-top: 3px;
-    padding-top: 5px;
-    margin-bottom: 3px;
-    padding-bottom: 5px;
-}
-
-.leaflet-popup-tip {
-    background-color: #462255;
-    color: white;
-    border-radius: 5px;
-    text-align: center;
-}
-
-.leaflet-popup-content-wrapper {
-    background-color: #462255;
-    color: white;
-    border-radius: 5px;
-    text-align: center;
-}
-
-a.popup {
-    color: white;
-}
+/* Buttons */
 
 .btn {
     background-color: #462255;
@@ -154,20 +175,10 @@ a.popup {
     background-color: #1d234b;
 }
 
+/* Modals */
+
 .modal-header {
     background-color: #1d234b;
-}
-
-.fa-city {
-    color: white;
-}
-
-.fa-plane {
-    color: #a1d6eb;
-}
-
-.fa-star {
-    color: yellow;
 }
 
 .remove-border-bottom {
@@ -185,6 +196,8 @@ a.popup {
     padding: 10px;
 }
 
+/* Time feature */
+
 .time-container {
     display: flex;
     flex-direction: column;
@@ -198,6 +211,7 @@ a.popup {
 
 #time-digital {
     margin: 10px;
+    font-size: 18pt;
 }
 
 /* Media queries for small screens */

@@ -166,11 +166,17 @@
                     </select>
                   </td>
                   <td class="text-center" colspan="2"><i class="fa-solid fa-arrow-right fa-2xl icon-green-custom" id="currency-arrow"></i></td>
-                  <td class="text-center" id="currency-to" colspan="2"></td>
+                  <td class="text-center" colspan="2">
+                    <select class="form-select" id="currency-to">
+
+                    </select>
+                  </td>
                 </tr>
 
                 <tr>
-                  <td class="text-center" id="number-from" colspan="3">1</td>
+                  <td class="text-center" colspan="3">
+                    <input id="number-from" class="form-control" type="number" min="0" max="10000000" value="1" aria-label="Amount to exchange from">
+                  </td>
                   <td class="text-center" id="number-to" colspan="3"></td>
                 </tr>
 
