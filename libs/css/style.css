@@ -177,6 +177,18 @@ a.popup {
 
 /* Modals */
 
+td, th {
+    padding-top: 2px;
+    padding-bottom: 2px;
+    padding-left: 1px;
+    padding-right: 1px;
+    margin-top: 2px;
+}
+
+a.news {
+    padding: 0;
+}
+
 .modal-header {
     background-color: #1d234b;
 }
@@ -255,6 +267,10 @@ a.popup {
     div.dropdown-item {
         margin: 5px;
         padding: 5px;
+    }
+
+    .responsive-modal-text {
+        font-size: 10pt;
     }
 
 }

@@ -139,6 +139,7 @@ const handleSelectCountry = async (layer) => {
     //highlight the new country
     layer.setStyle(selectedCountryStyle);
     layer.bringToFront;
+    //Tracking for reset style above
     layer.isSelected = true;
 
     //update dropdown if needed
@@ -310,7 +311,7 @@ $('#map').on('mouseleave', '.country-info', () => {
 // ---MAP MARKERS FEATURE --- //////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////
 
-//------------CITY LAYER---------------------------------------------------
+//------------CITY LAYER------------//
 
 //Get city info and store in marker groups
 const getCities = async (layer) => {
@@ -365,7 +366,7 @@ const getCities = async (layer) => {
     return cityArr;
 };
 
-//------------AIRPORTS LAYER---------------------------------------------------
+//------------AIRPORTS LAYER---------//
 
 //Get airport info and store in marker groups
 const getAirports = async (layer) => {
@@ -431,10 +432,13 @@ const getNews = (layer) => {
                 if (articles[0]) {
                     articles.forEach((article) => {
                         $('#news-body').append(
-                            '<tr><th colspan="3"><i class="fa-regular fa-newspaper fa-xl icon-green-custom"></i>  ' + article.title + '</th></tr>'
-                            + '<tr class="table-bottom-border-on"><td>Source: ' + article.source.name + '</td>'
-                            + '<td>Date: ' + new Date(article.publishedAt).toDateString() + '</td>'
-                            + '<td><a href="' + article.url + '" target="blank">Full Article</a></td></tr>'
+                            '<tr><th colspan="2"><a class="news responsive-modal-text" href="'
+                            + article.url + '" target="blank"><i class="fa-regular fa-newspaper fa-xl icon-green-custom"></i>  '
+                            + article.title + '</a></th></tr>'
+                            + '<tr class="table-bottom-border-on"><td class="responsive-modal-text text-center">Source: '
+                            + article.source.name + '</td>'
+                            + '<td class="responsive-modal-text text-center">Date: '
+                            + new Date(article.publishedAt).toDateString() + '</td></tr>'
                         );
                     });
                 } else {
