@@ -14,8 +14,11 @@ $(window).on('load', function () {
 let map;
 let geojson;
 let selectedCountry;
+let initialCountry;
+let selectedTimezone;
 let cityMarkers = L.markerClusterGroup();
 let airportMarkers = L.markerClusterGroup();
+let timerInterval;
 
 //tile layers
 const streets = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}", {
@@ -75,6 +78,7 @@ const weatherBtn = L.easyButton("fa-solid fa-cloud-sun-rain fa-xl", (btn, map) =
 weatherBtn.addTo(map);
 
 const currencyBtn = L.easyButton("fa-solid fa-coins fa-xl", (btn, map) => {
+    getExchangeRate(initialCountry.feature.properties.currencyCode, selectedCountry.feature.properties.currencyCode);
     $("#currency-modal").modal("show");
   });
 
@@ -246,6 +250,7 @@ const getProps = async (layer) => {
                 }
                 layer.feature.properties.area = Number(result.data.areaInSqKm).toLocaleString();
                 layer.feature.properties.population = Number(result.data.population).toLocaleString();
+                layer.feature.properties.currencyCode = result.data.currencyCode;
             } else {
                 console.log('error');
             }
@@ -463,6 +468,20 @@ const getNews = (layer) => {
 
 //Local Time Modal
 
+//digital clock
+const showTime = () => {    
+    const timezone = selectedTimezone;
+    const currentDate = new Date();
+    const invDate = new Date(currentDate.toLocaleString('en-US', {timeZone: timezone}));
+    const diff = currentDate.getTime() - invDate.getTime();
+    const targetDate = new Date(currentDate.getTime() - diff)
+    const hour = targetDate.getHours();
+    const min = targetDate.getMinutes();
+    const currentTime = `${hour.toString().padStart(2, 0)}:${min.toString().padStart(2, 0)}`;
+
+    $('#time-digital').html(currentTime);
+}
+
 const getTime = (layer) => {
     const layerInfo = layer.feature.properties;
     $('#time-title').html('Loading...');
@@ -481,9 +500,10 @@ const getTime = (layer) => {
             console.log(JSON.stringify(result));
             
             if (result.status.name == "ok") {
-                timezoneInfo = result.data;  
+                const timezoneInfo = result.data;
+                selectedTimezone = timezoneInfo.timezoneId;
                 $('#time-title').html(timezoneInfo.timezoneId);
-                $('#time-digital').html('Put in digital clock here');
+                //analog clock
                 $(function () {
                     $("#clock").htAnalogClock({
 
@@ -491,6 +511,10 @@ const getTime = (layer) => {
                         timezone: timezoneInfo.timezoneId
                     });
                   });
+                //digital clock
+                timerInterval = setInterval(showTime, 1000);
+                showTime();
+                
             } else {
                 console.log('error');
             }
@@ -503,6 +527,11 @@ const getTime = (layer) => {
     });
 }
 
+//clear interval on modal close
+
+$('#time-modal').on('hide.bs.modal', () => {
+    clearInterval(timerInterval);
+  });
 
 // Weather Modal
 
@@ -564,6 +593,63 @@ const getWeather = (layer) => {
             handlePOSTError();
         }
     }); 
+}
+
+const getExchangeRate = (exFrom, exTo) => {
+    if (exFrom === exTo) {
+        $('#currency-title').html('Please select 2 different currencies');
+        $('#currency-from').hide();
+        $('#currency-to').hide();
+        $('#currency-arrow').hide();
+        $('#number-from').hide();
+        $('#number-to').hide();
+        return
+    }
+    $('#currency-title').html('Loading...');
+    $('#currency-from').hide();
+    $('#currency-to').hide();
+    $('#currency-arrow').hide();
+    $('#number-from').hide();
+    $('#number-to').hide();
+    $.ajax({
+        url: "./libs/php/currency-exchange.php",
+        type: 'POST',
+        dataType: 'json',
+        data: {
+            exchangeFrom: exFrom,
+            exchangeTo: exTo
+        },
+        success: function(result) {
+
+            console.log(JSON.stringify(result));
+            
+            if (result.status.name == "ok") {
+
+                const exRate = result.data.info.rate;
+                $('#currency-title').html('Exchange Rate');
+                $('#currency-from').html(exFrom);
+                $('#currency-to').html(exTo);
+                $('#number-to').html(exRate);
+                $('#currency-from').show();
+                $('#currency-to').show();
+                $('#currency-arrow').show();
+                $('#number-from').show();
+                $('#number-to').show();
+            } else {
+                console.log('error');
+            }
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            $('#currency-title').html('Currency code not found');
+            $('#currency-from').hide();
+            $('#currency-to').hide();
+            $('#currency-arrow').hide();
+            $('#number-from').hide();
+            $('#number-to').hide();
+            console.log('POST request not fulfilled');
+            handlePOSTError();
+        }
+    });
 }
 
 //------------------EVENT LISTENERS-----------------------------------------
@@ -674,6 +760,7 @@ $.ajax({
                         }
                     }
                 });
+                initialCountry = country;
                 handleSelectCountry(country);
                 $('#loader').css('background', '#ffffff40');
             }
