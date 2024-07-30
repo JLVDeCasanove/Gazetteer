@@ -157,11 +157,9 @@ const handleSelectCountry = async (layer) => {
     const cities = await getCities(layer)
         .then((cities) => cityMarkers.addLayers(cities));
 
-/*
     //adding airports
     const airports = await getAirports(layer)
     .then((airports) => airportMarkers.addLayers(airports));
-*/
 
 };
 
