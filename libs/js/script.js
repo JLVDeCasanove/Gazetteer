@@ -35,6 +35,7 @@ let currencyListPopulated = false;
 //functions
 const handlePOSTError = () => {
     $('#loader').hide();
+    console.log('POST request not fulfilled');
 }
 
 
@@ -120,15 +121,14 @@ const handleSelectCountry = async (layer) => {
     //make loader transparent to show map but disable input while country info loads
     $('#loader').css('background', '#ffffff25');
     $('#loader').show();
+    //Deselect current selected country
+    if (selectedCountry) {
+        geojson.resetStyle(selectedCountry);
+        selectedCountry.isSelected = false;
+    }
     //Set current target
     selectedCountry = layer;
-    //Deselect current selected country
-    geojson.eachLayer((l) => {
-        if (l.isSelected) {
-            geojson.resetStyle(l);
-            l.isSelected = false;
-        }
-    });
+
     //clear marker layers
     cityMarkers.clearLayers();
     airportMarkers.clearLayers();
@@ -169,19 +169,21 @@ const handleSelectCountry = async (layer) => {
 
 //Selecting a country with the select dropdown box
 $('#country-list').on('change', (e) => {
-    let layer;
-    geojson.eachLayer((l) => {
-        if (l.feature.properties.name === e.target.value) {
-            layer = l;
+    let country;
+    geojson.eachLayer((layer) => {
+        if (layer.feature.properties.name === e.target.value) {
+            country = layer;
         }
     });
-    handleSelectCountry(layer);
+    handleSelectCountry(country);
 });
 
 //Selecting a country by clicking on the map
 const selectFeature = (e) => {
-    const layer = e.target;
-    handleSelectCountry(layer);
+    const country = e.target;
+    if (country !== selectedCountry) {
+        handleSelectCountry(country);
+    }
 };
 
 //Highting a country on mouseover
@@ -245,40 +247,47 @@ countryInfo.update = function (props) {
 
 //Ajax call for country info
 const getProps = async (layer) => {
+    const props = layer.feature.properties;
     await $.ajax({
         url: "./libs/php/country-info.php",
         type: 'POST',
         dataType: 'json',
         data: {
-            country: layer.feature.properties.iso_a2
+            country: props.iso_a2
         },
         success: function(result) {
     
             console.log(JSON.stringify(result));
             
             if (result.status.name == "ok") {
-                layer.feature.properties.continent = result.data.continentName;
+                const {
+                    continentName,
+                    capital,
+                    areaInSqKm,
+                    population,
+                    currencyCode
+                } = result.data;
+                props.continent = continentName;
                 //fixes specific case which shows incorrect capital for Kazakstan
-                if (layer.feature.properties.iso_a2 === 'KZ') {
-                    layer.feature.properties.capital = 'Astana';
+                if (props.iso_a2 === 'KZ') {
+                    props.capital = 'Astana';
                 } else {
-                    layer.feature.properties.capital = result.data.capital;
+                    props.capital = capital;
                 }
-                layer.feature.properties.area = Number(result.data.areaInSqKm).toLocaleString();
-                layer.feature.properties.population = Number(result.data.population).toLocaleString();
+                props.area = Number(areaInSqKm).toLocaleString();
+                props.population = Number(population).toLocaleString();
                 //adds currency code for currency feature
-                layer.feature.properties.currencyCode = result.data.currencyCode;
+                props.currencyCode = currencyCode;
             } else {
                 console.log('error');
             }
         },
         error: function(jqXHR, textStatus, errorThrown) {
             $('.country-info').hide();
-            console.log('POST request not fulfilled');
             handlePOSTError();
         }
     });
-    return layer.feature.properties;
+    return props;
 }
 
 //Toggle detailed info by clicking on the info box
@@ -320,20 +329,20 @@ const getCities = async (layer) => {
         type: 'POST',
         dataType: 'json',
         data: {
-            country: layer.feature.properties.iso_a2
+            country: layerData.iso_a2
         },
         success: function(result) {
     
             console.log(JSON.stringify(result));
             
             if (result.status.name == "ok") {
-                cityArr = [];
                 let checkingArr = [];
-                result.data.forEach((city) => {
+                const resultArray = result.data;
+                resultArray.forEach((city) => {
                     //checking array to avoid duplicates from API call
                     if (!checkingArr.includes(city.name)) {
                         //check info stored by country info feature to identify capital and give different marker
-                        //Additional cases where API calls were mismatched
+                        //Plus additional cases where API calls were mismatched
                         if (city.name === layerData.capital || city.name === 'Reykjavík' || city.name === 'Delhi'|| city.name === 'City of Brussels'|| city.name === 'Naypyidaw') {
                             //Store capital lat and lng data for weather feature
                             layerData.capitalLat = city.latitude;
@@ -357,7 +366,6 @@ const getCities = async (layer) => {
 
         },
         error: function(jqXHR, textStatus, errorThrown) {
-            console.log('POST request not fulfilled');
             handlePOSTError();
         }
     });
@@ -368,21 +376,22 @@ const getCities = async (layer) => {
 
 //Get airport info and store in marker groups
 const getAirports = async (layer) => {
+    const layerData = layer.feature.properties;
     let airportArr = [];
     await $.ajax({
         url: "./libs/php/airports.php",
         type: 'POST',
         dataType: 'json',
         data: {
-            country: layer.feature.properties.iso_a2
+            country: layerData.iso_a2
         },
         success: function(result) {
     
             console.log(JSON.stringify(result));
             
             if (result.status.name == "ok") {
-                airportArr = [];
-                result.data.forEach((airport) => {
+                const resultArr = result.data;
+                resultArr.forEach((airport) => {
                     airportArr.push(L.marker([airport.latitude, airport.longitude], {icon: airportIcon}).bindPopup('<h5>' + airport.name + '</h5>'));
                 });
 
@@ -392,7 +401,6 @@ const getAirports = async (layer) => {
         
         },
         error: function(jqXHR, textStatus, errorThrown) {
-            console.log('POST request not fulfilled');
             handlePOSTError();
         }
     });
@@ -412,13 +420,14 @@ const newsBtn = L.easyButton("fa-solid fa-newspaper fa-xl", (btn, map) => {
 
 //Ajax call and modal population
 const getNews = (layer) => {
+    const layerData = layer.feature.properties;
     $('news-body').html('<p>Loading Local News...</p>');
     $.ajax({
         url: "./libs/php/news.php",
         type: 'POST',
         dataType: 'json',
         data: {
-            country: layer.feature.properties.iso_a2
+            country: layerData.iso_a2
         },
         success: function(result) {
 
@@ -448,7 +457,6 @@ const getNews = (layer) => {
             }
         },
         error: function(jqXHR, textStatus, errorThrown) {
-            console.log('POST request not fulfilled');
             $('#news-body').html('<tr><th>No Local News Found</th></tr>');
             handlePOSTError();
         }
@@ -533,7 +541,6 @@ const getTime = (layer) => {
         },
         error: function(jqXHR, textStatus, errorThrown) {
             $('#time-title').html('Timezone not found.');
-            console.log('POST request not fulfilled');
             handlePOSTError();
         }
     });
@@ -549,17 +556,32 @@ const weatherBtn = L.easyButton("fa-solid fa-cloud-sun-rain fa-xl", (btn, map) =
     $("#weather-modal").modal("show");
   });
 
+//functions for showing and hiding info
+const hideWeatherInfo = () => {
+    $('#weather-temperature-row').hide();
+    $('#weather-condition-row').hide();
+    $('#weather-clouds-row').hide();
+    $('#weather-humidity-row').hide();
+    $('#weather-windspeed-row').hide();
+    $('#weather-station-row').hide();
+    $('#weather-datetime-row').hide();
+}
+
+const showWeatherInfo = () => {
+    $('#weather-temperature-row').show();
+    $('#weather-condition-row').show();
+    $('#weather-clouds-row').show();
+    $('#weather-humidity-row').show();
+    $('#weather-windspeed-row').show();
+    $('#weather-station-row').show();
+    $('#weather-datetime-row').show();
+}
+
 //Ajax call and modal population
 const getWeather = (layer) => {
     layerInfo = layer.feature.properties;
     $('#weather-title').html('Loading...')
-    $('#weather-temperature').hide();
-    $('#weather-condition').hide();
-    $('#weather-clouds').hide();
-    $('#weather-humidity').hide();
-    $('#weather-windspeed').hide();
-    $('#weather-station').hide();
-    $('#weather-datetime').hide();
+    hideWeatherInfo();
 
     $.ajax({
         url: "./libs/php/weather.php",
@@ -586,25 +608,12 @@ const getWeather = (layer) => {
                 $('#weather-windspeed').html(result['data']['windSpeed'] + ' knots');
                 $('#weather-station').html(result['data']['stationName']);
                 $('#weather-datetime').html(new Date(result['data']['datetime']).toLocaleString());
-                $('#weather-temperature').show();
-                $('#weather-condition').show();
-                $('#weather-clouds').show();
-                $('#weather-humidity').show();
-                $('#weather-windspeed').show();
-                $('#weather-station').show();
-                $('#weather-datetime').show();
+                showWeatherInfo();
             }
         },
         error: function(jqXHR, textStatus, errorThrown) {
-            console.log('POST request not fulfilled');
             $('#weather-title').html('No Observation Found')
-            $('#weather-temperature').hide();
-            $('#weather-condition').hide();
-            $('#weather-clouds').hide();
-            $('#weather-humidity').hide();
-            $('#weather-windspeed').hide();
-            $('#weather-station').hide();
-            $('#weather-datetime').hide();
+            hideWeatherInfo();
             handlePOSTError();
         }
     }); 
@@ -621,18 +630,22 @@ const currencyBtn = L.easyButton("fa-solid fa-coins fa-xl", (btn, map) => {
   });
 
 const handleCurrencyButton = async () => {
+    const defaultExFrom = initialCountry.feature.properties.currencyCode;
+    const defaultExTo = selectedCountry.feature.properties.currencyCode;
     //populate the select lists if empty
     if (!currencyListPopulated) {
         await populateCurrencyList();
     } else {
-        $('#currency-from').val(initialCountry.feature.properties.currencyCode);
-        $('#currency-to').val(selectedCountry.feature.properties.currencyCode);
+        //sets default currency to exchange from to the initial country set upon page load.
+        $('#currency-from').val(defaultExFrom);
+        //sets default currency to exchange to to the country currently selected.
+        $('#currency-to').val(defaultExTo);
     }
     $('#number-from').val(1);
     exFrom = $('#currency-from').val();
     exTo =  $('#currency-to').val();
     //show currency not found if selected country is not in list
-    if (!selectedCountry.feature.properties.currencyCode) {
+    if (!defaultExTo) {
         $('#currency-title').html('Currency code not found');
         $('#number-to').html('');
     //show message if currency codes to and from are equal
@@ -671,7 +684,6 @@ const populateCurrencyList = async () => {
         },
         error: function(jqXHR, textStatus, errorThrown) {
             $('#currency-title').html('Currency code Not found...');
-            console.log('POST request not fulfilled');
             handlePOSTError();
         }
     });
@@ -705,7 +717,6 @@ const getExchangeRate = (exFrom, exTo, amount) => {
         error: function(jqXHR, textStatus, errorThrown) {
             $('#currency-title').html('Currency code not found');
             $('#number-to').html('');
-            console.log('POST request not fulfilled');
             handlePOSTError();
         }
     });
@@ -791,7 +802,6 @@ const getWiki = (layer) => {
             }
         },
         error: function(jqXHR, textStatus, errorThrown) {
-            console.log('POST request not fulfilled');
             $('#wiki-title').html('Entry not found');
             $('#wiki-summary').html('Please go to <a href="https://www.wikipedia.org/">https://www.wikipedia.org/</a> and search manually.');
             $('#wiki-link').attr('href', 'https://www.wikipedia.org/');
@@ -878,7 +888,6 @@ $(document).ready(() => {
         
         },
         error: function(jqXHR, textStatus, errorThrown) {
-            console.log('POST request not fulfilled');
             handlePOSTError();
         }
     });
@@ -911,7 +920,6 @@ $(document).ready(() => {
 
         },
         error: function(jqXHR, textStatus, errorThrown) {
-            console.log('POST request not fulfilled');
             handlePOSTError();
         }
     });
