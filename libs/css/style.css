@@ -79,9 +79,10 @@ h4 {
 
 .country-info {
     padding: 6px 8px;
+    left: 5px;
     font-size: 12pt;
-    background-color: #462255;
-    color: white;
+    background-color: white;
+    color: black;
     box-shadow: 0 0 15px rgba(0,0,0,0.2);
     border-radius: 5px;
     text-align: center;
@@ -92,6 +93,15 @@ p.country-info {
     padding-top: 5px;
     margin-bottom: 3px;
     padding-bottom: 5px;
+}
+
+#country-info-id {
+    margin: 0;
+    padding: 0;
+}
+
+.extra-info {
+    display: none;
 }
 
 /* Map icons and popups */
@@ -108,17 +118,7 @@ p.country-info {
     color: yellow;
 }
 
-.leaflet-popup-tip {
-    background-color: #462255;
-    color: white;
-    border-radius: 5px;
-    text-align: center;
-}
-
 .leaflet-popup-content-wrapper {
-    background-color: #462255;
-    color: white;
-    border-radius: 5px;
     text-align: center;
 }
 
@@ -131,51 +131,18 @@ a.popup {
 #select-container {
     position: fixed;
     top: 0;
-    right: 40%;
     z-index: 999;
-    width: auto;
+    width: 100%;
     padding: 11px 0;
-    color: white;
   }
 
 #country-list {
+    width: 200px;
     text-align: center;
-    background-color: #462255;
-    color: white;
-    font-size: 18pt;
     margin: 0 auto;
-    border-radius: 5px;
 }
 
-.select-selected:after {
-    position: absolute;
-    content: "";
-    top: 14px;
-    right: 10px;
-    width: 0;
-    height: 0;
-    border: 6px solid transparent;
-    border-color: #fff transparent transparent transparent;
-  }
-
-/* Buttons */
-
-.btn {
-    background-color: #462255;
-    font-weight: bold;
-    color: white;
-}
-
-.btn:hover {
-    background-color: #7094cf;
-    color: #242526;
-}
-
-.btn:onclick {
-    background-color: #1d234b;
-}
-
-/* Modals */
+/* Modals REVIEW*/
 
 td, th {
     padding-top: 2px;
@@ -187,10 +154,6 @@ td, th {
 
 a.news {
     padding: 0;
-}
-
-.modal-header {
-    background-color: #1d234b;
 }
 
 .remove-border-bottom {
@@ -228,49 +191,32 @@ a.news {
 
 /* Media queries for small screens */
 
-@media only screen and (max-width: 700px) {
-    .navbar-brand {
-        font-size: 14pt;
-        font-family: "Lobster", sans-serif;
-    }
+@media only screen and (max-width: 768px) {
 
     .country-info {
-        padding: 2px;
-        font-size: 8pt;
+        padding: 2px 5px;
+        font-size: 10pt;
     }
 
     div.country-info.leaflet-control {
         margin: 3px;
+        bottom: 40px;
     }
 
-    h4 {
-        margin-bottom: 0;
+}
+
+@media only screen and (max-width: 425px) {
+
+    div.country-info.leaflet-control {
+        bottom: 55px;
     }
 
-    .extra-info {
-        display: none;
-    }
+}
 
-    #select-container {
-        left: 15%;
-      }
+@media only screen and (max-width: 320px) {
 
-    #country-list {
-        font-size: 12pt;
-    }
-
-
-    .dropdown-text {
-        font-size: 10pt;
-    }
-
-    div.dropdown-item {
-        margin: 5px;
-        padding: 5px;
-    }
-
-    .responsive-modal-text {
-        font-size: 10pt;
+    div.country-info.leaflet-control {
+        bottom: 68px;
     }
 
 }
