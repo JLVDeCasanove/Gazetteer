@@ -57,8 +57,8 @@ const loadingComplete = () => {
 }
 
 const onModalClose = () => {
-    $('.modal-loader').removeClass('fade-out');
     $('.error-overlay').hide();
+    $('.modal-loader').removeClass('fade-out');
 }
 
 const handleModalClose = () => {
@@ -668,7 +668,7 @@ const weatherBtn = L.easyButton("fa-solid fa-cloud-sun-rain fa-xl", (btn, map) =
   });
 
 //On modal close
-$('#weatherModal').on('hidden.bs.modal', () => {
+$('#weather-modal').on('hidden.bs.modal', () => {
     handleModalClose();
 });
 

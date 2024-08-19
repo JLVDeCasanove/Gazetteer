@@ -30,7 +30,6 @@
     <link rel="stylesheet" href="./libs/css/leaflet.extra-markers.min.css">
     <link rel="stylesheet" href="./libs/css/MarkerCluster.css">
     <link rel="stylesheet" href="./libs/css/MarkerCluster.Default.css">
-    <link rel="stylesheet" href="./libs/css/toastify.css">
 
     <!--Custom styles--> 
     <link rel="stylesheet" href="./libs/css/style.css">
@@ -145,7 +144,7 @@
             <!--Modal Body-->
             <div class="row">
               <div class="col border m-2">
-                <p id="weather-today-title" class="fw-bold fs-5 mt-1">&nbsp;</p>
+                <p id="weather-today-title" class="fw-bold fs-5 mt-1 ml-1">&nbsp;</p>
                 <div class="row">
                   <div class="col text-center m-3">
                     <p id="weather-today-conditions" class="fw-bold fs-6">&nbsp;</p>
@@ -258,7 +257,9 @@
               </table>
             </div>
             <div class="modal-footer justify-content-between">
-              <a href="https://rapidapi.com/user/principalapis" target="_blank">Principal APIs</a>
+              <span class="d-flex flex-row align-items-start">
+                <p>Powered By:&nbsp;</p><a href="https://rapidapi.com/user/principalapis" target="_blank">Principal APIs</a>
+              </span>
               <button type="button" class="btn btn-outline-success btn-sm" data-bs-dismiss="modal">Close</button>
             </div>
           </div>
@@ -293,7 +294,9 @@
               </table>
             </div>
             <div class="modal-footer justify-content-between">
-              <a href="https://www.geonames.org/" target="_blank">geonames.org</a>
+              <span class="d-flex flex-row align-items-start">
+                <p>Powered By:&nbsp;</p><a href="https://www.geonames.org/" target="_blank">geonames.org</a>
+              </span>
               <button type="button" class="btn btn-outline-success btn-sm" data-bs-dismiss="modal">Close</button>
             </div>
           </div>
@@ -348,7 +351,6 @@
     <script src="./libs/js/easy-button.js"></script>
     <script src="./libs/js/leaflet.extra-markers.min.js"></script>
     <script src="./libs/js/leaflet.markercluster.js"></script>
-    <script src="./libs/js/toastify.js"></script>
 
     <!--//Webapp Script-->
     <script src="./libs/js/script.js"></script>
