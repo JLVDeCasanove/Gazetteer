@@ -104,28 +104,6 @@ p.country-info {
     display: none;
 }
 
-/* Map icons and popups */
-
-.fa-city {
-    color: white;
-}
-
-.fa-plane {
-    color: #a1d6eb;
-}
-
-.fa-star {
-    color: yellow;
-}
-
-.leaflet-popup-content-wrapper {
-    text-align: center;
-}
-
-a.popup {
-    color: white;
-}
-
 /* Country Select Box */
 
 #select-container {
@@ -142,7 +120,7 @@ a.popup {
     margin: 0 auto;
 }
 
-/* Modals REVIEW*/
+/* Modals REVIEW**************/
 
 td, th {
     padding-top: 2px;
@@ -169,24 +147,6 @@ a.news {
     border-color: #a6accf;
     margin: 10px;
     padding: 10px;
-}
-
-/* Time feature */
-
-.time-container {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-}
-
-#time-title {
- margin: 8px;
-}
-
-#time-digital {
-    margin: 10px;
-    font-size: 18pt;
 }
 
 /* Media queries for small screens */

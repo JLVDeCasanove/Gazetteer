@@ -22,8 +22,21 @@ let geojson;
 let selectedCountry; //tracks currently selected country
 let initialCountry; //tracks country selected on page load
 let randomCountry; //stores a random country for when location not found
-let cityMarkers = L.markerClusterGroup();
-let airportMarkers = L.markerClusterGroup();
+//style options for cluster polygons
+const polygonStyles = {
+    fillColor: "#303A2B",
+    color: "#231651",
+    weight: 2,
+    opacity: 1,
+    fillOpacity: 0.5
+};
+let cityMarkers = L.markerClusterGroup({
+    polygonOptions: polygonStyles
+ });
+let airportMarkers = L.markerClusterGroup({
+    polygonOptions: polygonStyles
+});
+let layerGroup = L.layerGroup();
 
 //for timezone feature
 let selectedTimezone;
@@ -62,9 +75,9 @@ const baseLayers = {
 //Map Styles
 const defaultCountryStyle = (feature) => {
     return {
-        fillColor: '#447604',
+        fillColor: '#14A44D',
         weight: 5,
-        color: '#48245e',
+        color: '#231651',
         dashArray: '',
         fillOpacity: 0.5
     }
@@ -91,6 +104,35 @@ const selectedCountryStyle = {
 
 */
 
+
+const cityIcon = L.ExtraMarkers.icon({
+    svg: true,
+    prefix: 'fa',
+    icon: 'fa-city',
+    iconColor: 'white',
+    markerColor: '#3B71CA',
+    shape: 'square',
+});
+
+const cityIconCapital = L.ExtraMarkers.icon({
+    svg: true,
+    icon: 'fa-star',
+    iconColor: 'white',
+    markerColor: '#E4A11B',
+    shape: 'square',
+    prefix: 'fa'
+});
+
+const airportIcon = L.ExtraMarkers.icon({
+    svg: true,
+    icon: 'fa-plane',
+    iconColor: 'white',
+    markerColor: '#54B4D3',
+    shape: 'square',
+    prefix: 'fa'
+});
+
+/*
 //Icons for map markers
 const cityIcon = L.divIcon({
     html: '<i class="fa-solid fa-city fa-2xl"></i>',
@@ -109,6 +151,7 @@ const airportIcon = L.divIcon({
     iconSize: [32, 32],
     className: 'airport-icon'
 });
+*/
 
 //add layer controls
 layerControl = L.control.layers(baseLayers);
@@ -154,13 +197,20 @@ const handleSelectCountry = async (countryCode) => {
     //clear current marker layers
     cityMarkers.clearLayers();
     airportMarkers.clearLayers();
+    layerGroup.clearLayers();
     //get country geoJson info
     const layer = await getCountry(countryCode)
     .then((layer) => selectedCountry = layer)
-    .then((layer) => (L.geoJSON(layer, { style: defaultCountryStyle })).addTo(map))
+    .then((layer) => (L.geoJSON(layer, { style: defaultCountryStyle })).addTo(layerGroup))
     .then((layer) => map.fitBounds(layer.getBounds()))
+    .then(() => {
+        //update dropdown if needed
+        const { iso_a2 } = selectedCountry.properties;
+        if ($('#country-list').val() !== iso_a2) {
+            $('#country-list').val(iso_a2);
+        }
+    })
     .then(async () => {
-        console.log(selectedCountry);
         //Update country info
         const props = await getProps(selectedCountry)
         .then((props) => countryInfo.update(props))
@@ -168,12 +218,13 @@ const handleSelectCountry = async (countryCode) => {
         //adding cities
         const cities = await getCities(selectedCountry)
             .then((cities) => cityMarkers.addLayers(cities))
-            .then(() => cityMarkers.addTo(map));
-
+            .then(() => cityMarkers.addTo(map));/*
+            
         //adding airports
         const airports = await getAirports(selectedCountry)
         .then((airports) => airportMarkers.addLayers(airports))
         .then(() => airportMarkers.addTo(map));
+        */
     })
     .then(() => $('#loader').hide());
 }
@@ -541,7 +592,8 @@ const showTime = () => {
     const targetDate = new Date(currentDate.getTime() - diff)
     const hour = targetDate.getHours();
     const min = targetDate.getMinutes();
-    const currentTime = `${hour.toString().padStart(2, 0)}:${min.toString().padStart(2, 0)}`;
+    const sec = targetDate.getSeconds();
+    const currentTime = `${hour.toString().padStart(2, 0)}:${min.toString().padStart(2, 0)}:${sec.toString().padStart(2, 0)}`;
 
     $('#time-digital').html(currentTime);
 }
@@ -555,7 +607,6 @@ $('#time-modal').on('hide.bs.modal', () => {
 const getTime = (layer) => {
     const layerInfo = layer.properties;
     $('#time-title').html('Loading...');
-    $('#clock').html('');
     $('#time-digital').html('');
     $.ajax({
         url: "./libs/php/timezone.php",
@@ -573,27 +624,10 @@ const getTime = (layer) => {
                 const timezoneInfo = result.data;
                 selectedTimezone = timezoneInfo.timezoneId;
                 $('#time-title').html(timezoneInfo.timezoneId);
-                
-                //analog clock
-                $(function () {
-                    $("#clock").htAnalogClock({
-                        fillColor: "#462255",
-                        pinColor: "#809848",
-                        borderColor: "#13330f",
-                        secondHandColor: "#809848",
-                        minuteHandColor: "#fff",
-                        hourHandColor: "#fff",
-                        fontColor: "#fff",
-                        fontName: "Tahoma"
-                    }, {
-                        timezone: timezoneInfo.timezoneId
-                    });
-                  });
-                
+                $('#utc-offset').html(timezoneInfo.gmtOffset);
                 //digital clock
-                timerInterval = setInterval(showTime, 1000);
+                timerInterval = setInterval(showTime, 100);
                 showTime();
-                
             } else {
                 console.log('error');
             }
@@ -810,6 +844,8 @@ const formatCountry = (country) => {
     let formattedCountry;
     if (country.includes("d'Ivoire")) {
         formattedCountry = 'Ivory%20Coast';
+    } else if (country === 'Swaziland') {
+        formattedCountry = 'Eswatini';
     } else if (country === 'Dem. Rep. Korea') {
         formattedCountry = 'North%20Korea';
     } else if (country === 'Lao PDR') {
@@ -853,9 +889,8 @@ const getWiki = (layer) => {
             
             if (result.status.name == "ok") {
                 const wikiEntry = result.data;
-                $('#wiki-title').html(wikiEntry.title);
-                $('#wiki-summary').html(wikiEntry.summary);
-                $('#wiki-link').attr('href', 'http://' + wikiEntry.wikipediaUrl);
+                const summaryWithLink = wikiEntry.summary.replace('...', '<a href="https://' + wikiEntry.wikipediaUrl + '" target="_blank" title="read full article">...</a>')
+                $('#wiki-summary').html(summaryWithLink);
             } else {
                 console.log('error');
             }
@@ -863,7 +898,6 @@ const getWiki = (layer) => {
         error: function(jqXHR, textStatus, errorThrown) {
             $('#wiki-title').html('Entry not found');
             $('#wiki-summary').html('Please go to <a href="https://www.wikipedia.org/">https://www.wikipedia.org/</a> and search manually.');
-            $('#wiki-link').attr('href', 'https://www.wikipedia.org/');
             handlePOSTError();
         }
     });
@@ -916,6 +950,8 @@ $(document).ready(() => {
     map = L.map('map', {
         layers: [streets]
     }).fitWorld();
+
+    layerGroup.addTo(map);
 
     //add layer controls
     layerControl.addTo(map);
