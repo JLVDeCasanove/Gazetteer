@@ -9,22 +9,37 @@
     <meta name="description" content="a global gazetteer, map, atlas and encyclopedia">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 
-    <link rel="icon" href="./favicon.png" type="image/png">
-    <link rel="stylesheet" href="./libs/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <!--Favicon--> 
+    <link rel="apple-touch-icon" sizes="180x180" href="./favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="./favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="./favicon/favicon-16x16.png">
+    <link rel="manifest" href="./favicon/site.webmanifest">
+
+    <!--Fonts--> 
+    <link rel="stylesheet" href="./libs/css/all.min.css"> <!--Font Awesome-->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lobster&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.css">
+
+    <!--Main Libraries/Frameworks--> 
+    <link rel="stylesheet" href="./libs/css/bootstrap.min.css">
+    <link rel="stylesheet" href="./libs/css/leaflet.css">
+    
+    <!--Add-on Libraries--> 
+    <link rel="stylesheet" href="./libs/css/easy-button.css">
+    <link rel="stylesheet" href="./libs/css/leaflet.extra-markers.min.css">
     <link rel="stylesheet" href="./libs/css/MarkerCluster.css">
     <link rel="stylesheet" href="./libs/css/MarkerCluster.Default.css">
+    <link rel="stylesheet" href="./libs/css/toastify.css">
+
+    <!--Custom styles--> 
     <link rel="stylesheet" href="./libs/css/style.css">
   </head>
 
   <body>
     <div class ="container-fluid">
         <div class="row">
-          <div id="select-container" data-bs-theme="dark">
+          <div id="select-container">
             <select id="country-list" class="form-select shadow-sm"></select>
           </div>
           <div id="map"></div>
@@ -37,7 +52,7 @@
     <div id="news-modal" class="modal" data-bs-backdrop="false" tabindex="-1">
       <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content shadow">
-          <div class="modal-header bg-gradient text-white">
+          <div class="modal-header bg-success bg-gradient text-white">
             <h5 class="modal-title">Local News</h5>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
@@ -46,8 +61,8 @@
 
             </table>
           </div>
-          <div class="modal-footer">
-            <p>API: </p><a href="https://newsapi.org/" target="_blank" title="News API">News API</a>
+          <div class="modal-footer justify-content-between">
+            <a href="https://newsapi.org/" target="_blank" title="News API">News API</a>
             <button type="button" class="btn btn-outline-success btn-sm" data-bs-dismiss="modal">Close</button>
           </div>
         </div>
@@ -58,19 +73,20 @@
     <div id="time-modal" class="modal" data-bs-backdrop="false" tabindex="-1">
       <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content shadow">
-          <div class="modal-header bg-gradient text-white">
-            <h5 class="modal-title">Local Time</h5>
+          <div class="modal-header bg-success bg-gradient text-white">
+            <h5 class="modal-title" id="time-title">Local Time</h5>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-            <div class="time-container">
-              <h4 id="time-title" class="text-center"></h4>
-              <canvas class="text-center" id="clock" height="200"></canvas>
-              <p class="text-center" id="time-digital"></p>
+            <div class="d-flex flex-column justify-content-center align-items-center">
+              <div class = "border border-1 rounded p-2 m-2">
+                <h3 class="text-center m-0" id="time-digital"></h3>
+              </div>
+              <p class = "text-center">UTC + <span id="utc-offset"></span></p>
             </div>
           </div>
-          <div class="modal-footer">
-            <p>API:</p><a href="https://www.geonames.org/">geonames.org</a>
+          <div class="modal-footer justify-content-between">
+            <a href="https://www.geonames.org/" target="_blank">geonames.org</a>
             <button type="button" class="btn btn-outline-success btn-sm" data-bs-dismiss="modal">Close</button>
           </div>
         </div>
@@ -81,7 +97,7 @@
     <div id="weather-modal" class="modal" data-bs-backdrop="false" tabindex="-1">
       <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content shadow">
-          <div class="modal-header bg-gradient text-white">
+          <div class="modal-header bg-success bg-gradient text-white">
             <h5 class="modal-title">Local Weather</h5>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
@@ -139,8 +155,8 @@
               </tr>
             </table>
           </div>
-          <div class="modal-footer">
-            <p>API:</p><a href="https://www.geonames.org/">geonames.org</a>
+          <div class="modal-footer justify-content-between">
+            <a href="https://www.geonames.org/">geonames.org</a>
             <button type="button" class="btn btn-outline-success btn-sm" data-bs-dismiss="modal">Close</button>
           </div>
         </div>
@@ -151,7 +167,7 @@
       <div id="currency-modal" class="modal" data-bs-backdrop="false" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
           <div class="modal-content shadow">
-            <div class="modal-header bg-gradient text-white">
+            <div class="modal-header bg-success bg-gradient text-white">
               <h5 class="modal-title">Exchange Rates</h5>
               <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
@@ -182,8 +198,8 @@
 
               </table>
             </div>
-            <div class="modal-footer">
-              <p>API:</p><a href="https://rapidapi.com/user/principalapis">Principal APIs</a>
+            <div class="modal-footer justify-content-between">
+              <a href="https://rapidapi.com/user/principalapis" target="_blank">Principal APIs</a>
               <button type="button" class="btn btn-outline-success btn-sm" data-bs-dismiss="modal">Close</button>
             </div>
           </div>
@@ -194,23 +210,19 @@
       <div id="wiki-modal" class="modal" data-bs-backdrop="false" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
           <div class="modal-content shadow">
-            <div class="modal-header bg-gradient text-white">
+            <div class="modal-header bg-success bg-gradient text-white">
               <h5 class="modal-title">Wikipedia</h5>
               <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
               <table class="table">
-                <tr>
-                  <th class="text-left align-middle" id="wiki-title"></th>
-                  <td class="text-right align-middle"><a id="wiki-link" target="_blank"><i class="fa-solid fa-w"></i></a></td>
-                </tr>
                 <tr class="remove-border-bottom">
                   <td class="text-left align-middle" id="wiki-summary" colspan="2"></td>
                 </tr>
               </table>
             </div>
-            <div class="modal-footer">
-              <p>API:</p><a href="https://www.geonames.org/">geonames.org</a>
+            <div class="modal-footer justify-content-between">
+              <a href="https://www.geonames.org/" target="_blank">geonames.org</a>
               <button type="button" class="btn btn-outline-success btn-sm" data-bs-dismiss="modal">Close</button>
             </div>
           </div>
@@ -218,10 +230,14 @@
       </div>
 
       <!-- ATTRIBUTIONS MODAL -->
+       <!--///////////////////////////
+       //////////// FOR DELETION /////
+       //////////////////////////////
+       -->
       <div id="attributions-modal" class="modal" data-bs-backdrop="false" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
           <div class="modal-content shadow">
-            <div class="modal-header bg-gradient text-white">
+            <div class="modal-header bg-success bg-gradient text-white">
               <h5 class="modal-title">Attributions</h5>
               <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
@@ -250,14 +266,19 @@
 
     <div id="loader"></div>
 
-    <script type="application/javascript" src="./libs/js/jquery-3.7.1.min.js"></script>
-    <script type="application/javascript" src="./libs/js/bootstrap.min.js"></script>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    <script src="https://kit.fontawesome.com/35118ad5da.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.js"></script>
+    <!--//Main Librarys/Frameworks-->
+    <script src="./libs/js/jquery-3.7.1.min.js"></script>
+    <script src="./libs/js/bootstrap.min.js"></script>
+    <script src="./libs/js/leaflet.js"></script>
+    
+    <!--//Add-on Libraries-->
+    <script src="./libs/js/easy-button.js"></script>
+    <script src="./libs/js/leaflet.extra-markers.min.js"></script>
     <script src="./libs/js/leaflet.markercluster.js"></script>
-    <script src="./libs/js/jquery.ht-analog-clock.min.js"></script>
-    <script type="application/javascript" src="./libs/js/script.js"></script>
+    <script src="./libs/js/toastify.js"></script>
+
+    <!--//Webapp Script-->
+    <script src="./libs/js/script.js"></script>
 
   </body>
 

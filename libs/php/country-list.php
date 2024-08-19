@@ -5,7 +5,8 @@
 
     $countryArr = [];
     foreach ($decode['features'] as $country) {
-        array_push($countryArr, $country['properties']['name']);
+        $countryInfoArr = [$country['properties']['name'], $country['properties']['iso_a2']];
+        array_push($countryArr, $countryInfoArr);
     }
     sort($countryArr);
 

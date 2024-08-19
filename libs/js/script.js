@@ -22,8 +22,21 @@ let geojson;
 let selectedCountry; //tracks currently selected country
 let initialCountry; //tracks country selected on page load
 let randomCountry; //stores a random country for when location not found
-let cityMarkers = L.markerClusterGroup();
-let airportMarkers = L.markerClusterGroup();
+//style options for cluster polygons
+const polygonStyles = {
+    fillColor: "#303A2B",
+    color: "#231651",
+    weight: 2,
+    opacity: 1,
+    fillOpacity: 0.5
+};
+let cityMarkers = L.markerClusterGroup({
+    polygonOptions: polygonStyles
+ });
+let airportMarkers = L.markerClusterGroup({
+    polygonOptions: polygonStyles
+});
+let layerGroup = L.layerGroup();
 
 //for timezone feature
 let selectedTimezone;
@@ -62,15 +75,15 @@ const baseLayers = {
 //Map Styles
 const defaultCountryStyle = (feature) => {
     return {
-        fillColor: '#313B72',
-        weight: 2,
-        opacity: 1,
-        color: 'black',
-        dashArray: '3',
-        fillOpacity: 0.7
+        fillColor: '#14A44D',
+        weight: 5,
+        color: '#231651',
+        dashArray: '',
+        fillOpacity: 0.5
     }
 };
 
+/* OBSOLETE STYLES
 const highlightedCountryStyle = {
     fillColor: '#809848',
     weight: 3,
@@ -79,14 +92,47 @@ const highlightedCountryStyle = {
     fillOpacity: 0.7
 };
 
+//OLD default coutnry style
 const selectedCountryStyle = {
-    fillColor: '#447604',
-    weight: 5,
-    color: '#48245e',
-    dashArray: '',
+    fillColor: '#313B72',
+    weight: 2,
+    opacity: 1,
+    color: 'black',
+    dashArray: '3',
     fillOpacity: 0.7
 };
 
+*/
+
+
+const cityIcon = L.ExtraMarkers.icon({
+    svg: true,
+    prefix: 'fa',
+    icon: 'fa-city',
+    iconColor: 'white',
+    markerColor: '#3B71CA',
+    shape: 'square',
+});
+
+const cityIconCapital = L.ExtraMarkers.icon({
+    svg: true,
+    icon: 'fa-star',
+    iconColor: 'white',
+    markerColor: '#E4A11B',
+    shape: 'square',
+    prefix: 'fa'
+});
+
+const airportIcon = L.ExtraMarkers.icon({
+    svg: true,
+    icon: 'fa-plane',
+    iconColor: 'white',
+    markerColor: '#54B4D3',
+    shape: 'square',
+    prefix: 'fa'
+});
+
+/*
 //Icons for map markers
 const cityIcon = L.divIcon({
     html: '<i class="fa-solid fa-city fa-2xl"></i>',
@@ -105,9 +151,10 @@ const airportIcon = L.divIcon({
     iconSize: [32, 32],
     className: 'airport-icon'
 });
+*/
 
 //add layer controls
-layerControl = L.control.layers(baseLayers, null, { position: 'topleft' });
+layerControl = L.control.layers(baseLayers);
 layerControl.addOverlay(cityMarkers, 'Cities');
 layerControl.addOverlay(airportMarkers, 'Airports');
 
@@ -116,6 +163,73 @@ const attributionsBtn = L.easyButton("fa-solid fa-copyright fa-xl", (btn, map) =
     $("#attributions-modal").modal("show");
   });
 
+const getCountry = async (countryCode) => {
+    let layer;
+    await $.ajax({
+        url: "./libs/php/geojson-borders.php",
+        type: 'POST',
+        dataType: 'json',
+        data: {
+            country: countryCode
+        },
+        success: function(result) {
+    
+            console.log(JSON.stringify(result));
+            
+            if (result.status.name == "ok") {
+                layer = result.data;
+            } else {
+                console.log('error');
+            }
+    
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            handlePOSTError();
+        }
+    });
+    return layer;
+}
+
+const handleSelectCountry = async (countryCode) => {
+    //make loader transparent to show map but disable input while country info loads
+    $('#loader').css('background', '#ffffff25');
+    $('#loader').show();
+    //clear current marker layers
+    cityMarkers.clearLayers();
+    airportMarkers.clearLayers();
+    layerGroup.clearLayers();
+    //get country geoJson info
+    const layer = await getCountry(countryCode)
+    .then((layer) => selectedCountry = layer)
+    .then((layer) => (L.geoJSON(layer, { style: defaultCountryStyle })).addTo(layerGroup))
+    .then((layer) => map.fitBounds(layer.getBounds()))
+    .then(() => {
+        //update dropdown if needed
+        const { iso_a2 } = selectedCountry.properties;
+        if ($('#country-list').val() !== iso_a2) {
+            $('#country-list').val(iso_a2);
+        }
+    })
+    .then(async () => {
+        //Update country info
+        const props = await getProps(selectedCountry)
+        .then((props) => countryInfo.update(props))
+
+        //adding cities
+        const cities = await getCities(selectedCountry)
+            .then((cities) => cityMarkers.addLayers(cities))
+            .then(() => cityMarkers.addTo(map));/*
+            
+        //adding airports
+        const airports = await getAirports(selectedCountry)
+        .then((airports) => airportMarkers.addLayers(airports))
+        .then(() => airportMarkers.addTo(map));
+        */
+    })
+    .then(() => $('#loader').hide());
+}
+
+/* OLD HANDLER
 //Country Selection Handler
 const handleSelectCountry = async (layer) => {
     //make loader transparent to show map but disable input while country info loads
@@ -133,9 +247,6 @@ const handleSelectCountry = async (layer) => {
     cityMarkers.clearLayers();
     airportMarkers.clearLayers();
 
-    //zoom to country
-    map.fitBounds(layer.getBounds());
-
     //highlight the new country
     layer.setStyle(selectedCountryStyle);
     layer.bringToFront;
@@ -143,10 +254,13 @@ const handleSelectCountry = async (layer) => {
     layer.isSelected = true;
 
     //update dropdown if needed
-    const { name } = selectedCountry.feature.properties;
-    if ($('#country-list').val() !== name) {
-        $('#country-list').val(name);
+    const { iso_a2 } = selectedCountry.feature.properties;
+    if ($('#country-list').val() !== iso_a2) {
+        $('#country-list').val(iso_a2);
     }
+
+    //zoom to country
+    map.fitBounds(layer.getBounds());
 
     //Update country info
     const props = await getProps(layer)
@@ -155,13 +269,16 @@ const handleSelectCountry = async (layer) => {
     
     //adding cities
     const cities = await getCities(layer)
-        .then((cities) => cityMarkers.addLayers(cities));
+        .then((cities) => cityMarkers.addLayers(cities))
+        .then(() => cityMarkers.addTo(map));
 
     //adding airports
     const airports = await getAirports(layer)
-    .then((airports) => airportMarkers.addLayers(airports));
+    .then((airports) => airportMarkers.addLayers(airports))
+    .then(() => airportMarkers.addTo(map));
 
 };
+*/
 
 /////////////////////////////////////////////////////////////////////////////
 // ---EVENT LISTENERS --- //////////////////////////////////////////////////
@@ -169,15 +286,16 @@ const handleSelectCountry = async (layer) => {
 
 //Selecting a country with the select dropdown box
 $('#country-list').on('change', (e) => {
-    let country;
-    geojson.eachLayer((layer) => {
-        if (layer.feature.properties.name === e.target.value) {
+    selectedCountry = $('#country-list').val();
+    /*geojson.eachLayer((layer) => {
+        if (layer.feature.properties.iso_a2 === e.target.value) {
             country = layer;
         }
-    });
-    handleSelectCountry(country);
+    });*/
+    handleSelectCountry(selectedCountry);
 });
 
+/* OLD CLICK SELECT FEATURE
 //Selecting a country by clicking on the map
 const selectFeature = (e) => {
     const country = e.target;
@@ -185,6 +303,7 @@ const selectFeature = (e) => {
         handleSelectCountry(country);
     }
 };
+*/
 
 //Highting a country on mouseover
 const highlightFeature = (e) => {
@@ -203,6 +322,8 @@ const resetHighlight = (e) => {
     }
 }
 
+
+/* Obsolete Listeners
 //tie functions to listeners
 const onEachFeature = (feature, layer) => {
     layer.on({
@@ -211,6 +332,7 @@ const onEachFeature = (feature, layer) => {
         click: selectFeature
     });
 }
+*/
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -218,7 +340,7 @@ const onEachFeature = (feature, layer) => {
 ///////////////////////////////////////////////////////////////////////////
 
 //Initilising custom control feature
-const countryInfo = L.control();
+const countryInfo = L.control({position: 'bottomleft'});
 
 countryInfo.onAdd = function (map) {
     this._div = L.DomUtil.create('div', 'country-info');
@@ -235,19 +357,19 @@ countryInfo.update = function (props) {
     } = props;
 
     //dynamic element creation
-    this._div.innerHTML = '<div id="country-info-id"><img src=https://flagsapi.com/' + iso_a2 + '/shiny/64.png>'
+    this._div.innerHTML = '<div id="country-info-id"><i id="more-info" class="fa-solid fa-angle-up text-muted"></i><br><img src=https://flagsapi.com/' + iso_a2 + '/shiny/64.png>'
         + '<h4>' + iso_a2 + '</h4></div><br>'
-        + '<div class="extra-info"><p><b>Continent:</b> ' + continent + '</p>'
-        + '<p><b>Capital:</b> ' + capital + '</p>'
-        + '<p><b>Area:</b> ' + area + ' km&sup2;</p>'
-        + '<p><b>Population:</b> ' + population + '</p></div>';
+        + '<table class="table extra-info"><tr><th class="text-start">Continent</th><td class="text-end">' + continent + '</td></tr>'
+        + '<tr><th class="text-start">Capital</th><td class="text-end">' + capital + '</td></tr>'
+        + '<tr><th class="text-start">Area</th><td class="text-end">' + area + ' km&sup2; </td></tr>'
+        + '<tr><th class="text-start">Population</th><td class="text-end">' + population + '</td></tr></table>';
     
     $('.country-info').show();
 };
 
 //Ajax call for country info
 const getProps = async (layer) => {
-    const props = layer.feature.properties;
+    const props = layer.properties;
     await $.ajax({
         url: "./libs/php/country-info.php",
         type: 'POST',
@@ -291,26 +413,14 @@ const getProps = async (layer) => {
 }
 
 //Toggle detailed info by clicking on the info box
-$('#map').on('click', '.country-info', () => {
-    $('.extra-info').toggle();
-    $('.country-info').css({
-        'background-color' : '#462255',
-        'color' : 'white'
-    });
+$('#map').on('mouseenter', '.country-info', () => {
+    $('.extra-info').show();
+    $('#more-info').hide();
 });
 
-//mouseover styling
-$('#map').on('mouseover', '.country-info', () => {
-    $('.country-info').css({
-        'background-color': '#7094cf',
-        'color' : '#242526'
-    });
-});
 $('#map').on('mouseleave', '.country-info', () => {
-    $('.country-info').css({
-        'background-color' : '#462255',
-        'color' : 'white'
-    });
+    $('.extra-info').hide();
+    $('#more-info').show();
 });
 
 
@@ -323,7 +433,7 @@ $('#map').on('mouseleave', '.country-info', () => {
 //Get city info and store in marker groups
 const getCities = async (layer) => {
     let cityArr = [];
-    const layerData = layer.feature.properties;
+    const layerData = layer.properties;
     await $.ajax({
         url: "./libs/php/cities.php",
         type: 'POST',
@@ -347,16 +457,16 @@ const getCities = async (layer) => {
                             //Store capital lat and lng data for weather feature
                             layerData.capitalLat = city.latitude;
                             layerData.capitalLng = city.longitude;
-                            cityArr.push(L.marker([city.latitude, city.longitude], {icon: cityIconCapital}).bindPopup('<i class="fa-regular fa-star"></i><h5>' + city.name + '</h5>'));
+                            cityArr.push(L.marker([city.latitude, city.longitude], {icon: cityIconCapital}).bindPopup('<p>' + city.name + '</p>'));
                         } else {
-                            cityArr.push(L.marker([city.latitude, city.longitude], {icon: cityIcon}).bindPopup('<h5>' + city.name + '</h5>'));
+                            cityArr.push(L.marker([city.latitude, city.longitude], {icon: cityIcon}).bindPopup('<p>' + city.name + '</p>'));
                         }
                         checkingArr.push(city.name);
                     }
                 });
                 //Manually add Washington for US as API call was unable to retrieve without sub-optimal params
                 if (layerData.iso_a2 === 'US') {
-                    cityArr.push(L.marker([38.89511, -77.03637], {icon: cityIconCapital}).bindPopup('<i class="fa-regular fa-star"></i><h5>Washington</h5>'));
+                    cityArr.push(L.marker([38.89511, -77.03637], {icon: cityIconCapital}).bindPopup('<p>Washington</p>'));
                     layerData.capitalLat = 38.89511;
                     layerData.capitalLng = -77.03637;
                 }
@@ -376,7 +486,7 @@ const getCities = async (layer) => {
 
 //Get airport info and store in marker groups
 const getAirports = async (layer) => {
-    const layerData = layer.feature.properties;
+    const layerData = layer.properties;
     let airportArr = [];
     await $.ajax({
         url: "./libs/php/airports.php",
@@ -392,7 +502,7 @@ const getAirports = async (layer) => {
             if (result.status.name == "ok") {
                 const resultArr = result.data;
                 resultArr.forEach((airport) => {
-                    airportArr.push(L.marker([airport.latitude, airport.longitude], {icon: airportIcon}).bindPopup('<h5>' + airport.name + '</h5>'));
+                    airportArr.push(L.marker([airport.latitude, airport.longitude], {icon: airportIcon}).bindPopup('<p>' + airport.name + '</p>'));
                 });
 
             } else {
@@ -420,7 +530,7 @@ const newsBtn = L.easyButton("fa-solid fa-newspaper fa-xl", (btn, map) => {
 
 //Ajax call and modal population
 const getNews = (layer) => {
-    const layerData = layer.feature.properties;
+    const layerData = layer.properties;
     $('news-body').html('<p>Loading Local News...</p>');
     $.ajax({
         url: "./libs/php/news.php",
@@ -482,7 +592,8 @@ const showTime = () => {
     const targetDate = new Date(currentDate.getTime() - diff)
     const hour = targetDate.getHours();
     const min = targetDate.getMinutes();
-    const currentTime = `${hour.toString().padStart(2, 0)}:${min.toString().padStart(2, 0)}`;
+    const sec = targetDate.getSeconds();
+    const currentTime = `${hour.toString().padStart(2, 0)}:${min.toString().padStart(2, 0)}:${sec.toString().padStart(2, 0)}`;
 
     $('#time-digital').html(currentTime);
 }
@@ -494,9 +605,8 @@ $('#time-modal').on('hide.bs.modal', () => {
 
 //Ajax call and modal population
 const getTime = (layer) => {
-    const layerInfo = layer.feature.properties;
+    const layerInfo = layer.properties;
     $('#time-title').html('Loading...');
-    $('#clock').html('');
     $('#time-digital').html('');
     $.ajax({
         url: "./libs/php/timezone.php",
@@ -514,27 +624,10 @@ const getTime = (layer) => {
                 const timezoneInfo = result.data;
                 selectedTimezone = timezoneInfo.timezoneId;
                 $('#time-title').html(timezoneInfo.timezoneId);
-                
-                //analog clock
-                $(function () {
-                    $("#clock").htAnalogClock({
-                        fillColor: "#462255",
-                        pinColor: "#809848",
-                        borderColor: "#13330f",
-                        secondHandColor: "#809848",
-                        minuteHandColor: "#fff",
-                        hourHandColor: "#fff",
-                        fontColor: "#fff",
-                        fontName: "Tahoma"
-                    }, {
-                        timezone: timezoneInfo.timezoneId
-                    });
-                  });
-                
+                $('#utc-offset').html(timezoneInfo.gmtOffset);
                 //digital clock
-                timerInterval = setInterval(showTime, 1000);
+                timerInterval = setInterval(showTime, 100);
                 showTime();
-                
             } else {
                 console.log('error');
             }
@@ -579,7 +672,7 @@ const showWeatherInfo = () => {
 
 //Ajax call and modal population
 const getWeather = (layer) => {
-    layerInfo = layer.feature.properties;
+    layerInfo = layer.properties;
     $('#weather-title').html('Loading...')
     hideWeatherInfo();
 
@@ -751,6 +844,8 @@ const formatCountry = (country) => {
     let formattedCountry;
     if (country.includes("d'Ivoire")) {
         formattedCountry = 'Ivory%20Coast';
+    } else if (country === 'Swaziland') {
+        formattedCountry = 'Eswatini';
     } else if (country === 'Dem. Rep. Korea') {
         formattedCountry = 'North%20Korea';
     } else if (country === 'Lao PDR') {
@@ -779,7 +874,7 @@ const getWiki = (layer) => {
     $('#wiki-title').html('Loading...');
     $('#wiki-summary').html('');
     $('#wiki-link').attr('href', 'https://www.wikipedia.org/');
-    const countryRequest = layer.feature.properties.name;
+    const countryRequest = layer.properties.name;
     const formattedCountry = formatCountry(countryRequest);
     $.ajax({
         url: "./libs/php/wikipedia.php",
@@ -794,9 +889,8 @@ const getWiki = (layer) => {
             
             if (result.status.name == "ok") {
                 const wikiEntry = result.data;
-                $('#wiki-title').html(wikiEntry.title);
-                $('#wiki-summary').html(wikiEntry.summary);
-                $('#wiki-link').attr('href', 'http://' + wikiEntry.wikipediaUrl);
+                const summaryWithLink = wikiEntry.summary.replace('...', '<a href="https://' + wikiEntry.wikipediaUrl + '" target="_blank" title="read full article">...</a>')
+                $('#wiki-summary').html(summaryWithLink);
             } else {
                 console.log('error');
             }
@@ -804,7 +898,6 @@ const getWiki = (layer) => {
         error: function(jqXHR, textStatus, errorThrown) {
             $('#wiki-title').html('Entry not found');
             $('#wiki-summary').html('Please go to <a href="https://www.wikipedia.org/">https://www.wikipedia.org/</a> and search manually.');
-            $('#wiki-link').attr('href', 'https://www.wikipedia.org/');
             handlePOSTError();
         }
     });
@@ -816,24 +909,31 @@ const getWiki = (layer) => {
 ///////////////////////////////////////////////////////////////////////////
 
 //function for when location found
-const onLocationFound = (e) => {
+const onLocationFound = async (e) => {
     let country;
     const coordinates = [e.latitude, e.longitude];
-    geojson.eachLayer((l) => {
-        const boundsToCheck = l.getBounds();
-        if (boundsToCheck.contains(coordinates)) {
-            //mitigates against multiple locations being found
-            if (!country) {
-                country = l;
-            } else {
-                return;
+    const response = await fetch('./libs/php/json/countryBorders.geo.json');
+    const json = await response.json();
+    const geoJson = await L.geoJSON(json);
+    try {
+        geoJson.eachLayer((l) => {
+            const boundsToCheck = l.getBounds();
+            if (boundsToCheck.contains(coordinates)) {
+                //mitigates against multiple locations being found
+                if (!country) {
+                    country = l.feature.properties.iso_a2;
+                } else {
+                    return;
+                }
             }
-        }
-    });
-    //set initial country for currency feature
-    initialCountry = country;
-    //select the initial country
-    handleSelectCountry(country);
+        })
+        //set initial country for currency feature
+        initialCountry = country;
+        //select the initial country
+        handleSelectCountry(country);
+    } catch (err) {
+        console.log(err);
+    }
 }
 
 //function for when location not found
@@ -851,6 +951,8 @@ $(document).ready(() => {
         layers: [streets]
     }).fitWorld();
 
+    layerGroup.addTo(map);
+
     //add layer controls
     layerControl.addTo(map);
     //add country info
@@ -861,7 +963,6 @@ $(document).ready(() => {
     weatherBtn.addTo(map);
     currencyBtn.addTo(map);
     wikiBtn.addTo(map);
-    attributionsBtn.addTo(map);
 
     //Ajax for populating country select list
     $.ajax({
@@ -879,7 +980,7 @@ $(document).ready(() => {
                 randomCountry = countryArr[Math.random() * (countryArr.length - 1)];
                 //populate select
                 countryArr.forEach((country) => {
-                    $('#country-list').append('<option value=\"' + country + '\">' + country + '</option>');
+                    $('#country-list').append('<option value=\"' + country[1] + '\">' + country[0] + '</option>');
                 });
 
             } else {
@@ -892,6 +993,13 @@ $(document).ready(() => {
         }
     });
 
+
+    //Find initial location, initial country selected if found, otherwise select a random country
+    map.locate();
+    map.on('locationfound', onLocationFound);
+    map.on('locationerror', onLocationError);
+
+    /*OLD CODE FOR POPULATING BORDERS
     //Ajax for adding GeoJSON borders
     $.ajax({
         url: "./libs/php/geojson-borders.php",
@@ -923,5 +1031,6 @@ $(document).ready(() => {
             handlePOSTError();
         }
     });
+    */
 
 });
