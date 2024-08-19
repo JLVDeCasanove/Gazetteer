@@ -3,6 +3,13 @@
 
 #loader {
     position: fixed;
+}
+
+.modal-loader {
+    position: absolute;
+}
+
+#loader, .modal-loader {
     top: 0;
     left: 0;
     right: 0;
@@ -11,8 +18,8 @@
     overflow: hidden;
     background: #ffffff;
 }
-    
-#loader:before {
+
+#loader:before, .modal-loader:before {
     content: "";
     position: fixed;
     top: calc(50% - 30px);
@@ -47,6 +54,30 @@
     -webkit-transform: rotate(360deg);
     transform: rotate(360deg);
     }
+}
+
+.fade-out {
+    visibility: hidden;
+    opacity: 0;
+    transition: visibility 0s .5s, opacity 1s linear;
+  }
+
+.error-overlay {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9999;
+    overflow: hidden;
+    background: #ffffff;
+}
+
+.error-icon-container {
+    position: fixed;
+    top: calc(50% - 16px);
+    left: calc(50% - 22px);
 }
 
 /* General */
@@ -121,6 +152,10 @@ p.country-info {
 }
 
 /* Modals REVIEW**************/
+
+
+
+
 
 td, th {
     padding-top: 2px;

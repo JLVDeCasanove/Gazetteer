@@ -49,6 +49,20 @@ let currencyListPopulated = false;
 const handlePOSTError = () => {
     $('#loader').hide();
     console.log('POST request not fulfilled');
+    $('.error-overlay').show();
+}
+
+const loadingComplete = () => {
+    $('.modal-loader').addClass('fade-out');
+}
+
+const onModalClose = () => {
+    $('.modal-loader').removeClass('fade-out');
+    $('.error-overlay').hide();
+}
+
+const handleModalClose = () => {
+    setTimeout(onModalClose, 500);
 }
 
 
@@ -157,11 +171,6 @@ const airportIcon = L.divIcon({
 layerControl = L.control.layers(baseLayers);
 layerControl.addOverlay(cityMarkers, 'Cities');
 layerControl.addOverlay(airportMarkers, 'Airports');
-
-//Attributions modal
-const attributionsBtn = L.easyButton("fa-solid fa-copyright fa-xl", (btn, map) => {
-    $("#attributions-modal").modal("show");
-  });
 
 const getCountry = async (countryCode) => {
     let layer;
@@ -454,7 +463,7 @@ const getCities = async (layer) => {
                         //check info stored by country info feature to identify capital and give different marker
                         //Plus additional cases where API calls were mismatched
                         if (city.name === layerData.capital || city.name === 'Reykjavík' || city.name === 'Delhi'|| city.name === 'City of Brussels'|| city.name === 'Naypyidaw') {
-                            //Store capital lat and lng data for weather feature
+                            //Store capital lat and lng data for timezone feature
                             layerData.capitalLat = city.latitude;
                             layerData.capitalLng = city.longitude;
                             cityArr.push(L.marker([city.latitude, city.longitude], {icon: cityIconCapital}).bindPopup('<p>' + city.name + '</p>'));
@@ -528,6 +537,11 @@ const newsBtn = L.easyButton("fa-solid fa-newspaper fa-xl", (btn, map) => {
     $("#news-modal").modal("show");
   });
 
+//On modal close
+$('#news-modal').on('hidden.bs.modal', () => {
+    handleModalClose();
+});
+
 //Ajax call and modal population
 const getNews = (layer) => {
     const layerData = layer.properties;
@@ -558,6 +572,7 @@ const getNews = (layer) => {
                             + new Date(article.publishedAt).toDateString() + '</td></tr>'
                         );
                     });
+                    loadingComplete();
                 } else {
                     $('#news-body').html('<tr><th>No Local News Found</th></tr>');
                 }
@@ -593,7 +608,7 @@ const showTime = () => {
     const hour = targetDate.getHours();
     const min = targetDate.getMinutes();
     const sec = targetDate.getSeconds();
-    const currentTime = `${hour.toString().padStart(2, 0)}:${min.toString().padStart(2, 0)}:${sec.toString().padStart(2, 0)}`;
+    const currentTime = `${hour.toString().padStart(2, 0)} : ${min.toString().padStart(2, 0)} : ${sec.toString().padStart(2, 0)}`;
 
     $('#time-digital').html(currentTime);
 }
@@ -601,13 +616,13 @@ const showTime = () => {
 //Clear interval on modal close
 $('#time-modal').on('hide.bs.modal', () => {
     clearInterval(timerInterval);
+    handleModalClose();
 });
 
 //Ajax call and modal population
 const getTime = (layer) => {
     const layerInfo = layer.properties;
     $('#time-title').html('Loading...');
-    $('#time-digital').html('');
     $.ajax({
         url: "./libs/php/timezone.php",
         type: 'POST',
@@ -624,17 +639,20 @@ const getTime = (layer) => {
                 const timezoneInfo = result.data;
                 selectedTimezone = timezoneInfo.timezoneId;
                 $('#time-title').html(timezoneInfo.timezoneId);
-                $('#utc-offset').html(timezoneInfo.gmtOffset);
+                $('#utc-offset').html('UTC + ' + timezoneInfo.gmtOffset);
                 //digital clock
                 timerInterval = setInterval(showTime, 100);
                 showTime();
+                loadingComplete();
             } else {
                 console.log('error');
+                loadingComplete();
             }
         },
         error: function(jqXHR, textStatus, errorThrown) {
             $('#time-title').html('Timezone not found.');
             handlePOSTError();
+            loadingComplete();
         }
     });
 }
@@ -649,67 +667,86 @@ const weatherBtn = L.easyButton("fa-solid fa-cloud-sun-rain fa-xl", (btn, map) =
     $("#weather-modal").modal("show");
   });
 
-//functions for showing and hiding info
-const hideWeatherInfo = () => {
-    $('#weather-temperature-row').hide();
-    $('#weather-condition-row').hide();
-    $('#weather-clouds-row').hide();
-    $('#weather-humidity-row').hide();
-    $('#weather-windspeed-row').hide();
-    $('#weather-station-row').hide();
-    $('#weather-datetime-row').hide();
-}
+//On modal close
+$('#weatherModal').on('hidden.bs.modal', () => {
+    handleModalClose();
+});
 
-const showWeatherInfo = () => {
-    $('#weather-temperature-row').show();
-    $('#weather-condition-row').show();
-    $('#weather-clouds-row').show();
-    $('#weather-humidity-row').show();
-    $('#weather-windspeed-row').show();
-    $('#weather-station-row').show();
-    $('#weather-datetime-row').show();
+const hideForecast = () => {
+    $('#weather-today-title').html('&nbsp;');
+    $('#weather-today-conditions').html('&nbsp;');
+    $('#weather-today-img').attr('src', '');
+    $('#weather-today-max-temp').html('&nbsp;');
+    $('#weather-today-min-temp').html('&nbsp;');
+    $('#weather-day1-date').html('&nbsp;');
+    $('#weather-day1-img').attr('src', '');
+    $('#weather-day1-img').attr('alt', '');
+    $('#weather-day1-img').attr('title', '');
+    $('#weather-day1-max-temp').html('&nbsp;');
+    $('#weather-day1-min-temp').html('&nbsp;');
+    $('#weather-day2-date').html('&nbsp;');
+    $('#weather-day2-img').attr('src', '');
+    $('#weather-day2-img').attr('alt', '');
+    $('#weather-day2-img').attr('title', '');
+    $('#weather-day2-max-temp').html('&nbsp;');
+    $('#weather-day2-min-temp').html('&nbsp;');
+    $('#last-updated').html('&nbsp;');
 }
 
 //Ajax call and modal population
 const getWeather = (layer) => {
-    layerInfo = layer.properties;
+    const { capital } = layer.properties;
     $('#weather-title').html('Loading...')
-    hideWeatherInfo();
 
     $.ajax({
         url: "./libs/php/weather.php",
         type: 'POST',
         dataType: 'json',
         data: {
-            latitude: layerInfo.capitalLat,
-            longitude: layerInfo.capitalLng
+            capital: capital
         },
         success: function(result) {
 
             console.log(JSON.stringify(result));
             if (result.status.name == "ok") {
-                $('#weather-title').html('Weather in ' + layerInfo.capital);
-
-                $('#weather-temperature').html(result['data']['temperature'] + '&degC');
-                if (result['data']['weatherCondition'] && result['data']['weatherCondition'] !== 'n/a') {
-                    $('#weather-condition').html(result['data']['weatherCondition']);
-                } else {
-                    $('#weather-condition').html('N/A');
-                }
-                $('#weather-clouds').html(result['data']['clouds']);
-                $('#weather-humidity').html(result['data']['humidity'] + '&#37');
-                $('#weather-windspeed').html(result['data']['windSpeed'] + ' knots');
-                $('#weather-station').html(result['data']['stationName']);
-                $('#weather-datetime').html(new Date(result['data']['datetime']).toLocaleString());
-                showWeatherInfo();
+                const {
+                    todayForecast,
+                    day1Forecast,
+                    day2Forecast,
+                    lastUpdated
+                } = result.data;
+                $('#weather-title').html(capital);
+                $('#weather-today-title').html('TODAY');
+                $('#weather-today-conditions').html(todayForecast.conditions);
+                $('#weather-today-img').attr('src', todayForecast.imgUrl);
+                $('#weather-today-max-temp').html(todayForecast.maxTemp);
+                $('#weather-today-min-temp').html(todayForecast.minTemp);
+                $('#weather-day1-date').html(Date.parse(day1Forecast.date).toString('ddd dS'));
+                $('#weather-day1-img').attr('src', day1Forecast.imgUrl);
+                $('#weather-day1-img').attr('alt', day1Forecast.conditions);
+                $('#weather-day1-img').attr('title', day1Forecast.conditions);
+                $('#weather-day1-max-temp').html(day1Forecast.maxTemp);
+                $('#weather-day1-min-temp').html(day1Forecast.minTemp);
+                $('#weather-day2-date').html(Date.parse(day2Forecast.date).toString('ddd dS'));
+                $('#weather-day2-img').attr('src', day2Forecast.imgUrl);
+                $('#weather-day2-img').attr('alt', day2Forecast.conditions);
+                $('#weather-day2-img').attr('title', day2Forecast.conditions);
+                $('#weather-day2-max-temp').html(day2Forecast.maxTemp);
+                $('#weather-day2-min-temp').html(day2Forecast.minTemp);
+                $('#last-updated').html('Last Updated: ' + Date.parse(lastUpdated).toString("HH:mm, dS MMM"));
+                loadingComplete();
+            } else {
+                $('#weather-title').html('Forecast not Found')
+                hideForecast();
+                handlePOSTError();
             }
         },
         error: function(jqXHR, textStatus, errorThrown) {
-            $('#weather-title').html('No Observation Found')
-            hideWeatherInfo();
+            $('#weather-title').html('Forecast not Found')
+            hideForecast();
             handlePOSTError();
         }
-    }); 
+    });
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -721,6 +758,11 @@ const currencyBtn = L.easyButton("fa-solid fa-coins fa-xl", (btn, map) => {
     handleCurrencyButton();
     $("#currency-modal").modal("show");
   });
+
+//On modal close
+$('#currency-modal').on('hidden.bs.modal', () => {
+    handleModalClose();
+});
 
 const handleCurrencyButton = async () => {
     const defaultExFrom = initialCountry.feature.properties.currencyCode;
@@ -803,6 +845,7 @@ const getExchangeRate = (exFrom, exTo, amount) => {
                 const exRate = result.data.result;
                 $('#currency-title').html('Exchange Rate');
                 $('#number-to').html(exRate);
+                loadingComplete();
             } else {
                 console.log('error');
             }
@@ -838,6 +881,11 @@ const wikiBtn = L.easyButton("fa-solid fa-w fa-xl", (btn, map) => {
     getWiki(selectedCountry);
     $("#wiki-modal").modal("show");
   });
+
+//On modal close
+$('#wiki-modal').on('hidden.bs.modal', () => {
+    handleModalClose();
+});
 
 //Function for formatting country names for Wikipedia API search
 const formatCountry = (country) => {
@@ -891,6 +939,7 @@ const getWiki = (layer) => {
                 const wikiEntry = result.data;
                 const summaryWithLink = wikiEntry.summary.replace('...', '<a href="https://' + wikiEntry.wikipediaUrl + '" target="_blank" title="read full article">...</a>')
                 $('#wiki-summary').html(summaryWithLink);
+                loadingComplete();
             } else {
                 console.log('error');
             }
