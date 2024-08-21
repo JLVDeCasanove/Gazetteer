@@ -22,11 +22,25 @@
 
 	$decode = json_decode($result,true);
 
+	$airportArr = [];
+	$checkingArr = [];
+
+	foreach ($decode as $airport) {
+		if (!in_array($airport['name'], $checkingArr)) {
+			array_push($airportArr, [
+				'name' => $airport['name'],
+				'latitude' => $airport['latitude'],
+				'longitude' => $airport['longitude']
+			]);
+		}
+		array_push($checkingArr, $airport['name']);
+	}
+
 	$output['status']['code'] = "200";
 	$output['status']['name'] = "ok";
 	$output['status']['description'] = "success";
 	$output['status']['returnedIn'] = intval((microtime(true) - $executionStartTime) * 1000) . " ms";
-	$output['data'] = $decode;
+	$output['data'] = $airportArr;
 
 	header('Content-Type: application/json; charset=UTF-8');
 

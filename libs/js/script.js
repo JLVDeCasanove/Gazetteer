@@ -48,11 +48,18 @@ let currencyListPopulated = false;
 //functions
 const handlePOSTError = () => {
     $('#loader').hide();
-    console.log('POST request not fulfilled');
+    Toastify({
+        text: "An error occured when trying to fetch data from server",
+        duration: 3000,
+        close: true,
+        style: {
+            background: 'linear-gradient(to right, #dc3545, #ea868f)',
+            color : 'white'
+        }
+      }).showToast();
 }
 
 handleModalError = () => {
-    console.log('POST request not fulfilled');
     $('.error-overlay').show();
     loadingComplete();
 }
@@ -144,9 +151,6 @@ const getCountry = async (countryCode) => {
             country: countryCode
         },
         success: function(result) {
-    
-            console.log(JSON.stringify(result));
-            
             if (result.status.name == "ok") {
                 layer = result.data;
             } else {
@@ -160,6 +164,11 @@ const getCountry = async (countryCode) => {
     });
     return layer;
 }
+
+/////////////////////////////////////////////////////////////////////////////
+// ---HANDLING COUNTRY SELECT --- //////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
+
 
 const handleSelectCountry = async (countryCode) => {
     //make loader transparent to show map but disable input while country info loads
@@ -204,45 +213,16 @@ const handleSelectCountry = async (countryCode) => {
     .then(() => $('#loader').hide());
 }
 
-
-/////////////////////////////////////////////////////////////////////////////
-// ---EVENT LISTENERS --- //////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////
-
 //Selecting a country with the select dropdown box
 $('#country-list').on('change', (e) => {
-    selectedCountry = $('#country-list').val();
-    /*geojson.eachLayer((layer) => {
-        if (layer.feature.properties.iso_a2 === e.target.value) {
-            country = layer;
-        }
-    });*/
-    handleSelectCountry(selectedCountry);
+    handleSelectCountry($('#country-list').val());
 });
-
-//Highting a country on mouseover
-const highlightFeature = (e) => {
-    const layer = e.target;
-    if (!layer.isSelected) {
-        layer.setStyle(highlightedCountryStyle);
-        layer.bringToFront();
-    }
-};
-
-//Removing country highlight on mouseleave
-const resetHighlight = (e) => {
-    const layer = e.target;
-    if (!layer.isSelected) {
-        geojson.resetStyle(layer);
-    }
-}
 
 
 /////////////////////////////////////////////////////////////////////////////
 // ---COUNTRY INFO FEATURE --- /////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////
 
-//Initilising custom control feature
 const countryInfo = L.control();
 //checks where to put the country info screen based on screen height
 const checkInfoPosition = () => {
@@ -254,19 +234,19 @@ const checkInfoPosition = () => {
 }
 checkInfoPosition();
 
-
 //check on resize
 $(window).resize(() => {
     checkInfoPosition();
     countryInfo.update(selectedCountry.properties);
 });
 
+//create element when added to map
 countryInfo.onAdd = function (map) {
     this._div = L.DomUtil.create('div', 'country-info');
     return this._div;
 };
 
-//Method for updating
+//update properties and add to element
 countryInfo.update = function (props) {
     const { iso_a2,
             continent,    
@@ -297,9 +277,6 @@ const getProps = async (layer) => {
             country: props.iso_a2
         },
         success: function(result) {
-    
-            console.log(JSON.stringify(result));
-            
             if (result.status.name == "ok") {
                 const {
                     continentName,
@@ -320,6 +297,7 @@ const getProps = async (layer) => {
                 //adds currency code for currency feature
                 props.currencyCode = currencyCode;
             } else {
+                $('.country-info').hide();
                 handlePOSTError();
             }
         },
@@ -344,7 +322,7 @@ const showExtraInfo = () => {
 
 let extraInfo = false;
 
-//Toggle detailed info by clicking on the info box
+//Toggle detailed info by mousing over
 $('#map').on('mouseenter', '.country-info', () => {
     if (window.matchMedia('(min-width: 769px)').matches) {
         showExtraInfo();
@@ -357,6 +335,7 @@ $('#map').on('mouseleave', '.country-info', () => {
     }
 });
 
+//toggle detailed info on click on moble devices
 $('#map').on('click', '.country-info', () => {
     if (window.matchMedia('(max-width: 768px)').matches) {
         hideExtraInfo();
@@ -376,6 +355,7 @@ $('#map').on('click', '.country-info', () => {
     }
 });
 
+
 /////////////////////////////////////////////////////////////////////////////
 // ---MAP MARKERS FEATURE --- //////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////
@@ -394,26 +374,20 @@ const getCities = async (layer) => {
             country: layerData.iso_a2
         },
         success: function(result) {
-    
-            console.log(JSON.stringify(result));
-            
             if (result.status.name == "ok") {
                 let checkingArr = [];
                 const resultArray = result.data;
                 resultArray.forEach((city) => {
-                    //checking array to avoid duplicates from API call
-                    if (!checkingArr.includes(city.name)) {
-                        //check info stored by country info feature to identify capital and give different marker
-                        //Plus additional cases where API calls were mismatched
-                        if (city.name === layerData.capital || city.name === 'Reykjavík' || city.name === 'Delhi'|| city.name === 'City of Brussels'|| city.name === 'Naypyidaw') {
-                            //Store capital lat and lng data for timezone feature
-                            layerData.capitalLat = city.latitude;
-                            layerData.capitalLng = city.longitude;
-                            cityArr.push(L.marker([city.latitude, city.longitude], {icon: cityIconCapital}).bindPopup('<p>' + city.name + '</p>'));
-                        } else {
-                            cityArr.push(L.marker([city.latitude, city.longitude], {icon: cityIcon}).bindPopup('<p>' + city.name + '</p>'));
-                        }
-                        checkingArr.push(city.name);
+                    //check info stored by country info feature to identify capital and give different marker
+                    //Plus additional cases where API calls were mismatched
+                    if (city.name === layerData.capital || city.name === 'Reykjavík' || city.name === 'Delhi'|| city.name === 'City of Brussels'|| city.name === 'Naypyidaw') {
+                        //Store capital lat and lng data for timezone feature
+                        layerData.capitalLat = city.latitude;
+                        layerData.capitalLng = city.longitude;
+                        //create marker group
+                        cityArr.push(L.marker([city.latitude, city.longitude], {icon: cityIconCapital}).bindPopup('<p>' + city.name + '</p>'));
+                    } else {
+                        cityArr.push(L.marker([city.latitude, city.longitude], {icon: cityIcon}).bindPopup('<p>' + city.name + '</p>'));
                     }
                 });
                 //Manually add Washington for US as API call was unable to retrieve without sub-optimal params
@@ -448,9 +422,6 @@ const getAirports = async (layer) => {
             country: layerData.iso_a2
         },
         success: function(result) {
-    
-            console.log(JSON.stringify(result));
-            
             if (result.status.name == "ok") {
                 const resultArr = result.data;
                 resultArr.forEach((airport) => {
@@ -514,9 +485,6 @@ const getNews = async (layer) => {
             country: targetCountry,
         },
         success: function(result) {
-
-            console.log(JSON.stringify(result));
-            
             if (result.status.name == "ok") {
                 const { 
                     news1,
@@ -600,6 +568,17 @@ const timeBtn = L.easyButton("fa-solid fa-clock fa-xl", (btn, map) => {
     $("#time-modal").modal("show");
   });
 
+//Handle modal close
+$('#time-modal').on('hide.bs.modal', () => {
+    clearInterval(timerInterval);
+    handleModalClose();
+});
+
+const hideTime = () => {
+    $('#time-digital').html('&nbsp;')
+    $('#utc-offset').html('&nbsp;');
+}
+
 //Digital clock
 const showTime = () => {    
     const timezone = selectedTimezone;
@@ -615,15 +594,10 @@ const showTime = () => {
     $('#time-digital').html(currentTime);
 }
 
-//Clear interval on modal close
-$('#time-modal').on('hide.bs.modal', () => {
-    clearInterval(timerInterval);
-    handleModalClose();
-});
-
 //Ajax call and modal population
 const getTime = (layer) => {
     const layerInfo = layer.properties;
+    hideTime();
     $('#time-title').html('Getting local time...');
     $.ajax({
         url: "./libs/php/timezone.php",
@@ -634,9 +608,6 @@ const getTime = (layer) => {
             longitude: layerInfo.capitalLng
         },
         success: function(result) {
-
-            console.log(JSON.stringify(result));
-            
             if (result.status.name == "ok") {
                 const timezoneInfo = result.data;
                 selectedTimezone = timezoneInfo.timezoneId;
@@ -648,11 +619,13 @@ const getTime = (layer) => {
                 loadingComplete();
             } else {
                 $('#time-title').html('Timezone not found.');
+                hideTime();
                 handleModalError();
             }
         },
         error: function(jqXHR, textStatus, errorThrown) {
             $('#time-title').html('Timezone not found.');
+            hideTime();
             handleModalError();
         }
     });
@@ -817,9 +790,6 @@ const populateCurrencyList = async () => {
         dataType: 'json',
         data: {},
         success: function(result) {
-
-            console.log(JSON.stringify(result));
-            
             if (result.status.name == "ok") {
                 const currencyArr = result.data;
                 currencyArr.forEach((currency) => {
@@ -854,9 +824,6 @@ const getExchangeRate = (exFrom, exTo, amount) => {
             amountToExchange: amount
         },
         success: function(result) {
-
-            console.log(JSON.stringify(result));
-            
             if (result.status.name == "ok") {
                 const exRate = result.data.result;
                 const formattedExRate = formatExRate(exTo, exRate);
@@ -896,7 +863,7 @@ $('#number-from').on('change', () => {
 
 
 //Button and modal handler
-const wikiBtn = L.easyButton("fa-solid fa-w fa-xl", (btn, map) => {
+const wikiBtn = L.easyButton("fa-solid fa-book fa-xl", (btn, map) => {
     getWiki(selectedCountry);
     $("#wiki-modal").modal("show");
   });
@@ -950,9 +917,6 @@ const getWiki = (layer) => {
             country: formattedCountry
         },
         success: function(result) {
-
-            console.log(JSON.stringify(result));
-            
             if (result.status.name == "ok") {
                 const wikiEntry = result.data;
                 const summaryWithLink = wikiEntry.summary.replace('...', '<a href="https://' + wikiEntry.wikipediaUrl + '" target="_blank" title="read full article">...</a>')
@@ -999,13 +963,21 @@ const onLocationFound = async (e) => {
         //select the initial country
         handleSelectCountry(country);
     } catch (err) {
-        console.log(err);
+        handlePOSTError();
     }
 }
 
 //function for when location not found
 const onLocationError = () => {
-    console.log('Location not found. Random country selected.');
+    Toastify({
+        text: "Your locatuion could not be found. Random country selected.",
+        duration: 3000,
+        close: true,
+        style: {
+            background: 'linear-gradient(to right, #ffc107, #ffda6a)',
+            color : 'black'
+        }
+      }).showToast();
     handleSelectCountry(randomCountry);
 }
 
@@ -1037,9 +1009,6 @@ $(document).ready(() => {
         dataType: 'json',
         data: {},
         success: function(result) {
-
-            console.log(JSON.stringify(result));
-            
             if (result.status.name == "ok") {
                 countryArr = result.data;
                 //store a random country for when country not found
@@ -1050,7 +1019,7 @@ $(document).ready(() => {
                 });
 
             } else {
-                console.log('error');
+                handlePOSTError();
             }
         
         },

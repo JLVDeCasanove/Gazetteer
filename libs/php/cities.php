@@ -22,11 +22,25 @@
 
 	$decode = json_decode($result,true);
 
+	$cityArr = [];
+	$checkingArr = [];
+
+	foreach ($decode['data'] as $city) {
+		if (!in_array($city['name'], $checkingArr)) {
+			array_push($cityArr, [
+				'name' => $city['name'],
+				'latitude' => $city['latitude'],
+				'longitude' => $city['longitude']
+			]);
+		}
+		array_push($checkingArr, $city['name']);
+	}
+
 	$output['status']['code'] = "200";
 	$output['status']['name'] = "ok";
 	$output['status']['description'] = "success";
 	$output['status']['returnedIn'] = intval((microtime(true) - $executionStartTime) * 1000) . " ms";
-	$output['data'] = $decode['data'];
+	$output['data'] = $cityArr;
 
 	header('Content-Type: application/json; charset=UTF-8');
 
