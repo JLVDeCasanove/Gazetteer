@@ -151,7 +151,7 @@ const getCountry = async (countryCode) => {
             country: countryCode
         },
         success: function(result) {
-            if (result.status.name == "ok") {
+            if (result.status.name == "ok" && result.data) {
                 layer = result.data;
             } else {
                 handlePOSTError();
@@ -198,7 +198,7 @@ const handleSelectCountry = async (countryCode) => {
     .then(async () => {
         //Update country info
         const props = await getProps(selectedCountry)
-        .then((props) => countryInfo.update(props))
+        .then((props) => countryInfo.update(props));
         //adding cities
         const cities = await getCities(selectedCountry)
             .then((cities) => cityMarkers.addLayers(cities))
@@ -256,7 +256,8 @@ countryInfo.update = function (props) {
     } = props;
 
     //dynamic element creation
-    this._div.innerHTML = '<div id="country-info-id"><i id="more-info" class="fa-solid fa-angle-up text-muted"></i><i id="close-more-info" class="fa-solid fa-angle-down text-muted"></i><br><img src=https://flagsapi.com/' + iso_a2 + '/shiny/64.png>'
+    if (props.iso_a2 && props.continent) {
+        this._div.innerHTML = '<div id="country-info-id"><i id="more-info" class="fa-solid fa-angle-up text-muted"></i><i id="close-more-info" class="fa-solid fa-angle-down text-muted"></i><br><img src=https://flagsapi.com/' + iso_a2 + '/shiny/64.png>'
         + '<h4>' + iso_a2 + '</h4></div><br>'
         + '<table class="table extra-info"><tr><th class="text-start">Continent</th><td class="text-end">' + continent + '</td></tr>'
         + '<tr><th class="text-start">Capital</th><td class="text-end">' + capital + '</td></tr>'
@@ -264,6 +265,9 @@ countryInfo.update = function (props) {
         + '<tr><th class="text-start">Population</th><td class="text-end">' + population + '</td></tr></table>';
     
     $('.country-info').show();
+    } else {
+        $('.country-info').hide();
+    }
 };
 
 //Ajax call for country info
@@ -277,7 +281,7 @@ const getProps = async (layer) => {
             country: props.iso_a2
         },
         success: function(result) {
-            if (result.status.name == "ok") {
+            if (result.status.name == "ok" && result.data) {
                 const {
                     continentName,
                     capital,
@@ -374,7 +378,7 @@ const getCities = async (layer) => {
             country: layerData.iso_a2
         },
         success: function(result) {
-            if (result.status.name == "ok") {
+            if (result.status.name == "ok" && result.data) {
                 let checkingArr = [];
                 const resultArray = result.data;
                 resultArray.forEach((city) => {
@@ -422,7 +426,7 @@ const getAirports = async (layer) => {
             country: layerData.iso_a2
         },
         success: function(result) {
-            if (result.status.name == "ok") {
+            if (result.status.name == "ok" && result.data) {
                 const resultArr = result.data;
                 resultArr.forEach((airport) => {
                     airportArr.push(L.marker([airport.latitude, airport.longitude], {icon: airportIcon}).bindPopup('<p>' + airport.name + '</p>'));
@@ -472,7 +476,7 @@ const hideNews = () => {
 }
 
 //Ajax call and modal population
-const getNews = async (layer) => {
+const getNews = (layer) => {
     const { iso_a2 } = layer.properties;
     targetCountry = iso_a2.toLowerCase();
     hideNews();
@@ -485,7 +489,7 @@ const getNews = async (layer) => {
             country: targetCountry,
         },
         success: function(result) {
-            if (result.status.name == "ok") {
+            if (result.status.name == "ok" && result.data) {
                 const { 
                     news1,
                     news2,
@@ -608,7 +612,7 @@ const getTime = (layer) => {
             longitude: layerInfo.capitalLng
         },
         success: function(result) {
-            if (result.status.name == "ok") {
+            if (result.status.name == "ok" && result.data) {
                 const timezoneInfo = result.data;
                 selectedTimezone = timezoneInfo.timezoneId;
                 $('#time-title').html(timezoneInfo.timezoneId);
@@ -680,7 +684,7 @@ const getWeather = (layer) => {
             capital: capital
         },
         success: function(result) {
-            if (result.status.name == "ok") {
+            if (result.status.name == "ok" && result.data) {
                 const {
                     todayForecast,
                     day1Forecast,
@@ -788,7 +792,7 @@ const populateCurrencyList = async () => {
         dataType: 'json',
         data: {},
         success: function(result) {
-            if (result.status.name == "ok") {
+            if (result.status.name == "ok" && result.data) {
                 const currencyArr = result.data;
                 currencyArr.forEach((currency) => {
                     $('#currency-from').append('<option value="' + currency.code + '">' + currency.name + '</option>');
@@ -822,7 +826,7 @@ const getExchangeRate = (exFrom, exTo, amount) => {
             amountToExchange: amount
         },
         success: function(result) {
-            if (result.status.name == "ok") {
+            if (result.status.name == "ok" && result.data) {
                 const exRate = result.data.result;
                 const formattedExRate = formatExRate(exTo, exRate);
                 $('#currency-title').html('Exchange Rate');
@@ -915,7 +919,7 @@ const getWiki = (layer) => {
             country: formattedCountry
         },
         success: function(result) {
-            if (result.status.name == "ok") {
+            if (result.status.name == "ok" && result.data) {
                 const wikiEntry = result.data;
                 const summaryWithLink = wikiEntry.summary.replace('...', '<a href="https://' + wikiEntry.wikipediaUrl + '" target="_blank" title="read full article">...</a>')
                 $('#wiki-summary').html(summaryWithLink);
@@ -1007,7 +1011,7 @@ $(document).ready(() => {
         dataType: 'json',
         data: {},
         success: function(result) {
-            if (result.status.name == "ok") {
+            if (result.status.name == "ok" && result.data) {
                 countryArr = result.data;
                 //store a random country for when country not found
                 randomCountry = countryArr[Math.random() * (countryArr.length - 1)];
