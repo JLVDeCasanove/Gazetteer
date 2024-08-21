@@ -7,7 +7,7 @@
 
 	$executionStartTime = microtime(true);
 
-	$url='https://currency-conversion-and-exchange-rates.p.rapidapi.com/latest?from=EUR&to=ALL';
+	$url='https://currency-conversion-and-exchange-rates.p.rapidapi.com/symbols?';
 	$header= ['x-rapidapi-host: currency-conversion-and-exchange-rates.p.rapidapi.com', 'x-rapidapi-key: ' . $apiKey];
 
 	$ch = curl_init();
@@ -21,8 +21,11 @@
 	curl_close($ch);
 
 	$decode = json_decode($result,true);
+	$currencyArr = [];
 
-	$currencyArr = array_keys($decode['rates']);
+	foreach ($decode['symbols'] as $key => $value) {
+		array_push($currencyArr, ['code' => $key, 'name' => $value]);
+	}
 
 	$output['status']['code'] = "200";
 	$output['status']['name'] = "ok";

@@ -102,28 +102,6 @@ const defaultCountryStyle = (feature) => {
     }
 };
 
-/* OBSOLETE STYLES
-const highlightedCountryStyle = {
-    fillColor: '#809848',
-    weight: 3,
-    color: '#666',
-    dashArray: '',
-    fillOpacity: 0.7
-};
-
-//OLD default coutnry style
-const selectedCountryStyle = {
-    fillColor: '#313B72',
-    weight: 2,
-    opacity: 1,
-    color: 'black',
-    dashArray: '3',
-    fillOpacity: 0.7
-};
-
-*/
-
-
 const cityIcon = L.ExtraMarkers.icon({
     svg: true,
     prefix: 'fa',
@@ -150,27 +128,6 @@ const airportIcon = L.ExtraMarkers.icon({
     shape: 'square',
     prefix: 'fa'
 });
-
-/*
-//Icons for map markers
-const cityIcon = L.divIcon({
-    html: '<i class="fa-solid fa-city fa-2xl"></i>',
-    iconSize: [32, 32],
-    className: 'city-icon'
-});
-
-const cityIconCapital = L.divIcon({
-    html: '<i class="fa-solid fa-star fa-2xl"></i>',
-    iconSize: [32, 32],
-    className: 'city-icon-capital'
-});
-
-const airportIcon = L.divIcon({
-    html: '<i class="fa-solid fa-plane fa-2xl"></i>',
-    iconSize: [32, 32],
-    className: 'airport-icon'
-});
-*/
 
 //add layer controls
 layerControl = L.control.layers(baseLayers);
@@ -218,6 +175,11 @@ const handleSelectCountry = async (countryCode) => {
     .then((layer) => (L.geoJSON(layer, { style: defaultCountryStyle })).addTo(layerGroup))
     .then((layer) => map.fitBounds(layer.getBounds()))
     .then(() => {
+        if (!initialCountry) {
+            initialCountry = selectedCountry;
+        }
+    })
+    .then(() => {
         //update dropdown if needed
         const { iso_a2 } = selectedCountry.properties;
         if ($('#country-list').val() !== iso_a2) {
@@ -228,7 +190,6 @@ const handleSelectCountry = async (countryCode) => {
         //Update country info
         const props = await getProps(selectedCountry)
         .then((props) => countryInfo.update(props))
-
         //adding cities
         const cities = await getCities(selectedCountry)
             .then((cities) => cityMarkers.addLayers(cities))
@@ -243,56 +204,6 @@ const handleSelectCountry = async (countryCode) => {
     .then(() => $('#loader').hide());
 }
 
-/* OLD HANDLER
-//Country Selection Handler
-const handleSelectCountry = async (layer) => {
-    //make loader transparent to show map but disable input while country info loads
-    $('#loader').css('background', '#ffffff25');
-    $('#loader').show();
-    //Deselect current selected country
-    if (selectedCountry) {
-        geojson.resetStyle(selectedCountry);
-        selectedCountry.isSelected = false;
-    }
-    //Set current target
-    selectedCountry = layer;
-
-    //clear marker layers
-    cityMarkers.clearLayers();
-    airportMarkers.clearLayers();
-
-    //highlight the new country
-    layer.setStyle(selectedCountryStyle);
-    layer.bringToFront;
-    //Tracking for reset style above
-    layer.isSelected = true;
-
-    //update dropdown if needed
-    const { iso_a2 } = selectedCountry.feature.properties;
-    if ($('#country-list').val() !== iso_a2) {
-        $('#country-list').val(iso_a2);
-    }
-
-    //zoom to country
-    map.fitBounds(layer.getBounds());
-
-    //Update country info
-    const props = await getProps(layer)
-        .then((props) => countryInfo.update(props))
-        .then(() => $('#loader').hide());
-    
-    //adding cities
-    const cities = await getCities(layer)
-        .then((cities) => cityMarkers.addLayers(cities))
-        .then(() => cityMarkers.addTo(map));
-
-    //adding airports
-    const airports = await getAirports(layer)
-    .then((airports) => airportMarkers.addLayers(airports))
-    .then(() => airportMarkers.addTo(map));
-
-};
-*/
 
 /////////////////////////////////////////////////////////////////////////////
 // ---EVENT LISTENERS --- //////////////////////////////////////////////////
@@ -308,16 +219,6 @@ $('#country-list').on('change', (e) => {
     });*/
     handleSelectCountry(selectedCountry);
 });
-
-/* OLD CLICK SELECT FEATURE
-//Selecting a country by clicking on the map
-const selectFeature = (e) => {
-    const country = e.target;
-    if (country !== selectedCountry) {
-        handleSelectCountry(country);
-    }
-};
-*/
 
 //Highting a country on mouseover
 const highlightFeature = (e) => {
@@ -335,18 +236,6 @@ const resetHighlight = (e) => {
         geojson.resetStyle(layer);
     }
 }
-
-
-/* Obsolete Listeners
-//tie functions to listeners
-const onEachFeature = (feature, layer) => {
-    layer.on({
-        mouseover: highlightFeature,
-        mouseout: resetHighlight,
-        click: selectFeature
-    });
-}
-*/
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -615,7 +504,8 @@ const hideNews = () => {
 const getNews = async (layer) => {
     const { iso_a2 } = layer.properties;
     targetCountry = iso_a2.toLowerCase();
-    $('news-body').html('<p>Loading Local News...</p>');
+    hideNews();
+    $('#news-title').html('Getting local news...');
     $.ajax({
         url: "./libs/php/news.php",
         type: 'POST',
@@ -634,9 +524,44 @@ const getNews = async (layer) => {
                     news3,
                 } = result.data;
 
-                news1.time = new Date(news1.rawTime);
-                news2.time = new Date(news2.rawTime);
-                news3.time = new Date(news3.rawTime);
+                const convertToElapsedTime = (date) => {
+                    const day = 86400000;
+                    const hour = 3600000;
+                    const min = 60000;
+                    const now = Date.now();
+                    const diff = now - date;
+                    if (diff >= day * 7) {
+                        return 'More than a week ago';
+                    } else if (diff >= day) {
+                        days = Math.floor(diff / day);
+                        if (days > 1) {
+                            return days + ' days ago';
+                        } else {
+                            return 'yesterday';
+                        };
+                    } else if (diff >= hour) {
+                        hours = Math.floor(diff / hour);
+                        if (hours >= 1) {
+                            return hours + ' hours ago';
+                        } else {
+                            return '1 hour ago';
+                        }
+                    } else if (diff >= min) {
+                        const mins = Math.floor(diff/min);
+                        if (mins > 1) {
+                            return mins + ' mins ago';
+                        } else {
+                            return '1 minute ago';
+                        }
+                    } else {
+                        return 'Less than a minute ago';
+                    }
+                }
+
+                news1.time = convertToElapsedTime(new Date(news1.rawTime));
+                news2.time = convertToElapsedTime(new Date(news2.rawTime));
+                news3.time = convertToElapsedTime(new Date(news3.rawTime));
+
                 $('#news-title').html('Top Headlines');
                 $('#news-1-img').attr('src', news1.img);
                 $('#news-1-headline').html(news1.headline);
@@ -699,7 +624,7 @@ $('#time-modal').on('hide.bs.modal', () => {
 //Ajax call and modal population
 const getTime = (layer) => {
     const layerInfo = layer.properties;
-    $('#time-title').html('Loading...');
+    $('#time-title').html('Getting local time...');
     $.ajax({
         url: "./libs/php/timezone.php",
         type: 'POST',
@@ -772,7 +697,7 @@ const hideForecast = () => {
 //Ajax call and modal population
 const getWeather = (layer) => {
     const { capital } = layer.properties;
-    $('#weather-title').html('Loading...')
+    $('#weather-title').html('Getting local weather...')
 
     $.ajax({
         url: "./libs/php/weather.php",
@@ -840,9 +765,22 @@ $('#currency-modal').on('hidden.bs.modal', () => {
     handleModalClose();
 });
 
+//function to convert ExRate
+const formatExRate = (targetExTo, rate) => {
+    zeroDecPlaces = ['CVE', 'DJF', 'GNF', 'IDR', 'JPY', 'KMF', 'KRW', 'PYG', 'RWF', 'UGX', 'VND', 'VUV', 'XAF', 'XOF', 'XPF'];
+    threeDecPlaces = ['BHD', 'IQD', 'JOD', 'KWD', 'LYD', 'OMR', 'TND'];
+    if (zeroDecPlaces.includes(targetExTo)) {
+        return Math.round(rate);
+    } else if (threeDecPlaces.includes(targetExTo)) {
+        return parseFloat(rate.toFixed(3));
+    } else {
+        return parseFloat(rate.toFixed(2));
+    }
+};
+
 const handleCurrencyButton = async () => {
-    const defaultExFrom = initialCountry.feature.properties.currencyCode;
-    const defaultExTo = selectedCountry.feature.properties.currencyCode;
+    const defaultExFrom = initialCountry.properties.currencyCode;
+    const defaultExTo = selectedCountry.properties.currencyCode;
     //populate the select lists if empty
     if (!currencyListPopulated) {
         await populateCurrencyList();
@@ -859,10 +797,12 @@ const handleCurrencyButton = async () => {
     if (!defaultExTo) {
         $('#currency-title').html('Currency code not found');
         $('#number-to').html('');
+        loadingComplete();
     //show message if currency codes to and from are equal
     } else if (exFrom === exTo) {
         $('#currency-title').html('Please select 2 different currencies to convert');
         $('#number-to').html('');
+        loadingComplete();
     } else {
         //call ajax and update values
         getExchangeRate(exFrom, exTo, $('#number-from').val());
@@ -882,13 +822,13 @@ const populateCurrencyList = async () => {
             
             if (result.status.name == "ok") {
                 const currencyArr = result.data;
-                currencyArr.forEach((cCode) => {
-                    $('#currency-from').append('<option>' + cCode + '</option>');
-                    $('#currency-to').append('<option>' + cCode + '</option>');
+                currencyArr.forEach((currency) => {
+                    $('#currency-from').append('<option value="' + currency.code + '">' + currency.name + '</option>');
+                    $('#currency-to').append('<option value="' + currency.code + '">' + currency.name + '</option>');
                 })
                 currencyListPopulated = true;
-                $('#currency-from').val(initialCountry.feature.properties.currencyCode);
-                $('#currency-to').val(selectedCountry.feature.properties.currencyCode);
+                $('#currency-from').val(initialCountry.properties.currencyCode);
+                $('#currency-to').val(selectedCountry.properties.currencyCode);
             } else {
                 $('#currency-title').html('Currency code Not found...');
                 handleModalError();
@@ -903,7 +843,7 @@ const populateCurrencyList = async () => {
 
 //Ajax call and modal population
 const getExchangeRate = (exFrom, exTo, amount) => {
-    $('#currency-title').html('Loading...');
+    $('#currency-title').html('Getting exchange rates...');
     $.ajax({
         url: "./libs/php/currency-exchange.php",
         type: 'POST',
@@ -918,20 +858,20 @@ const getExchangeRate = (exFrom, exTo, amount) => {
             console.log(JSON.stringify(result));
             
             if (result.status.name == "ok") {
-
                 const exRate = result.data.result;
+                const formattedExRate = formatExRate(exTo, exRate);
                 $('#currency-title').html('Exchange Rate');
-                $('#number-to').html(exRate);
+                $('#number-to').val(formattedExRate);
                 loadingComplete();
             } else {
                 $('#currency-title').html('Currency code not found');
-                $('#number-to').html('');
+                $('#number-to').val('');
                 handleModalError();
             }
         },
         error: function(jqXHR, textStatus, errorThrown) {
             $('#currency-title').html('Currency code not found');
-            $('#number-to').html('');
+            $('#number-to').val('');
             handleModalError();
         }
     });
@@ -998,7 +938,7 @@ const formatCountry = (country) => {
 
 //Ajax call and modal population
 const getWiki = (layer) => {
-    $('#wiki-title').html('Loading...');
+    $('#wiki-title').html('Getting Wiki entries...');
     $('#wiki-summary').html('&nbsp;');
     const { name } = layer.properties;
     const formattedCountry = formatCountry(name);
@@ -1056,8 +996,6 @@ const onLocationFound = async (e) => {
                 }
             }
         })
-        //set initial country for currency feature
-        initialCountry = country;
         //select the initial country
         handleSelectCountry(country);
     } catch (err) {
@@ -1068,7 +1006,6 @@ const onLocationFound = async (e) => {
 //function for when location not found
 const onLocationError = () => {
     console.log('Location not found. Random country selected.');
-    initialCountry = randomCountry;
     handleSelectCountry(randomCountry);
 }
 
@@ -1127,39 +1064,5 @@ $(document).ready(() => {
     map.locate();
     map.on('locationfound', onLocationFound);
     map.on('locationerror', onLocationError);
-
-    /*OLD CODE FOR POPULATING BORDERS
-    //Ajax for adding GeoJSON borders
-    $.ajax({
-        url: "./libs/php/geojson-borders.php",
-        type: 'POST',
-        dataType: 'json',
-        data: {},
-        success: function(result) {
-
-            console.log(JSON.stringify(result));
-            
-            if (result.status.name == "ok") {
-                const mapData = result.data;
-                //add borders
-                geojson = L.geoJson(mapData, {
-                    style: defaultCountryStyle,
-                    onEachFeature: onEachFeature
-                }).addTo(map);
-
-                //Find initial location, initial country selected if found, otherwise select a random country
-                map.locate();
-                map.on('locationfound', onLocationFound);
-                map.on('locationerror', onLocationError);
-            } else {
-                console.log('error');
-            }
-
-        },
-        error: function(jqXHR, textStatus, errorThrown) {
-            handlePOSTError();
-        }
-    });
-    */
 
 });
