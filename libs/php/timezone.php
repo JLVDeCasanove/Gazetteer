@@ -1,13 +1,9 @@
 <?php
 	$env = parse_ini_file('../../.env');
 	$apiKey = $env['GEONAMES_API_KEY'];
-
-	ini_set('display_errors', 'On');
-	error_reporting(E_ALL);
-
 	$executionStartTime = microtime(true);
 
-	$url='http://api.geonames.org/timezoneJSON?lat=' . $_REQUEST['latitude'] . '&lng=' . $_REQUEST['longitude'] . '&username=' . $apiKey;
+	$url='http://api.geonames.org/timezoneJSON?lat=' . $_REQUEST['latitude'] . '&lng=' . $_POST['longitude'] . '&username=' . $apiKey;
 
 	$ch = curl_init();
 	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);

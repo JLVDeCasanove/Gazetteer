@@ -1,13 +1,9 @@
 <?php
     $env = parse_ini_file('../../.env');
 	$apiKey = $env['API_NINJA_KEY'];
-
-	ini_set('display_errors', 'On');
-	error_reporting(E_ALL);
-
 	$executionStartTime = microtime(true);
 
-	$url='https://api.api-ninjas.com/v1/airports?country=' . $_REQUEST['country'];
+	$url='https://api.api-ninjas.com/v1/airports?country=' . $_POST['country'];
 	$header= ['X-Api-Key: ' . $apiKey];
 
 	$ch = curl_init();

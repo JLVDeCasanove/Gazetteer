@@ -1,13 +1,8 @@
 <?php
     $env = parse_ini_file('../../.env');
 	$apiKey = $env['THE_NEWS_API_KEY'];
-	$userAgent = $_SERVER['HTTP_USER_AGENT'];
-
-	ini_set('display_errors', 'On');
-	error_reporting(E_ALL);
-
 	$executionStartTime = microtime(true);
-	$url='https://api.thenewsapi.com/v1/news/top?api_token=' . $apiKey . '&locale=' . $_REQUEST['country'];
+	$url='https://api.thenewsapi.com/v1/news/top?api_token=' . $apiKey . '&locale=' . $_POST['country'];
 
 	$ch = curl_init();
 	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);

@@ -1,13 +1,9 @@
 <?php
     $env = parse_ini_file('../../.env');
 	$apiKey = $env['GEONAMES_API_KEY'];
-
-	ini_set('display_errors', 'On');
-	error_reporting(E_ALL);
-
 	$executionStartTime = microtime(true);
 
-	$url='http://api.geonames.org/wikipediaSearchJSON?title=' . $_REQUEST['country'] . '&maxRows=1&username=' . $apiKey;
+	$url='http://api.geonames.org/wikipediaSearchJSON?title=' . $_POST['country'] . '&maxRows=1&username=' . $apiKey;
 
 	$ch = curl_init();
 	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);

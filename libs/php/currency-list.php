@@ -1,10 +1,6 @@
 <?php
     $env = parse_ini_file('../../.env');
 	$apiKey = $env['RAPID_API_KEY'];
-
-	ini_set('display_errors', 'On');
-	error_reporting(E_ALL);
-
 	$executionStartTime = microtime(true);
 
 	$url='https://currency-conversion-and-exchange-rates.p.rapidapi.com/symbols?';

@@ -1,13 +1,9 @@
 <?php
     $env = parse_ini_file('../../.env');
 	$apiKey = $env['RAPID_API_KEY'];
-
-	ini_set('display_errors', 'On');
-	error_reporting(E_ALL);
-
 	$executionStartTime = microtime(true);
 
-	$url='https://wft-geo-db.p.rapidapi.com/v1/geo/cities?types=CITY&countryIds=' . $_REQUEST['country'] . '&limit=10&sort=-population';
+	$url='https://wft-geo-db.p.rapidapi.com/v1/geo/cities?types=CITY&countryIds=' . $_POST['country'] . '&limit=10&sort=-population';
 	$header= ['x-rapidapi-host: wft-geo-db.p.rapidapi.com', 'x-rapidapi-key: ' . $apiKey];
 
 	$ch = curl_init();

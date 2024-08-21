@@ -1,13 +1,9 @@
 <?php
     $env = parse_ini_file('../../.env');
 	$apiKey = $env['WEATHER_API_KEY'];
-	
-	ini_set('display_errors', 'On');
-	error_reporting(E_ALL);
-
 	$executionStartTime = microtime(true);
 
-	$url='https://api.weatherapi.com/v1/forecast.json?q=' . $_REQUEST['capital'] . '&days=3&key=' . $apiKey;
+	$url='https://api.weatherapi.com/v1/forecast.json?q=' . $_POST['capital'] . '&days=3&key=' . $apiKey;
 
 	$ch = curl_init();
 	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
