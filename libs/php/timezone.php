@@ -3,7 +3,7 @@
 	$apiKey = $env['GEONAMES_API_KEY'];
 	$executionStartTime = microtime(true);
 
-	$url='http://api.geonames.org/timezoneJSON?lat=' . $_REQUEST['latitude'] . '&lng=' . $_POST['longitude'] . '&username=' . $apiKey;
+	$url='http://api.geonames.org/timezoneJSON?lat=' . $_POST['latitude'] . '&lng=' . $_POST['longitude'] . '&username=' . $apiKey;
 
 	$ch = curl_init();
 	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
