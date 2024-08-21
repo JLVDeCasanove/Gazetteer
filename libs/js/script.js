@@ -202,13 +202,13 @@ const handleSelectCountry = async (countryCode) => {
         //adding cities
         const cities = await getCities(selectedCountry)
             .then((cities) => cityMarkers.addLayers(cities))
-            .then(() => cityMarkers.addTo(map));/*
+            .then(() => cityMarkers.addTo(map));
             
         //adding airports
         const airports = await getAirports(selectedCountry)
         .then((airports) => airportMarkers.addLayers(airports))
         .then(() => airportMarkers.addTo(map));
-        */
+        
     })
     .then(() => $('#loader').hide());
 }
@@ -680,8 +680,6 @@ const getWeather = (layer) => {
             capital: capital
         },
         success: function(result) {
-
-            console.log(JSON.stringify(result));
             if (result.status.name == "ok") {
                 const {
                     todayForecast,
