@@ -3,6 +3,13 @@
 
 #loader {
     position: fixed;
+}
+
+.modal-loader {
+    position: absolute;
+}
+
+#loader, .modal-loader {
     top: 0;
     left: 0;
     right: 0;
@@ -11,8 +18,8 @@
     overflow: hidden;
     background: #ffffff;
 }
-    
-#loader:before {
+
+#loader:before, .modal-loader:before {
     content: "";
     position: fixed;
     top: calc(50% - 30px);
@@ -47,6 +54,30 @@
     -webkit-transform: rotate(360deg);
     transform: rotate(360deg);
     }
+}
+
+.fade-out {
+    visibility: hidden;
+    opacity: 0;
+    transition: visibility 0s .5s, opacity 1s linear;
+  }
+
+.error-overlay {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9998;
+    overflow: hidden;
+    background: #ffffff;
+}
+
+.error-icon-container {
+    position: fixed;
+    top: calc(50% - 16px);
+    left: calc(50% - 22px);
 }
 
 /* General */
@@ -104,6 +135,11 @@ p.country-info {
     display: none;
 }
 
+#close-more-info {
+    display: none;
+    width: 100%;
+}
+
 /* Country Select Box */
 
 #select-container {
@@ -120,33 +156,25 @@ p.country-info {
     margin: 0 auto;
 }
 
-/* Modals REVIEW**************/
+/* Modals */
 
-td, th {
-    padding-top: 2px;
-    padding-bottom: 2px;
-    padding-left: 1px;
-    padding-right: 1px;
-    margin-top: 2px;
+.modal-body {
+    min-height: 160px;
 }
 
-a.news {
-    padding: 0;
+/* News Modal */
+.news-image-container {
+    height: 160px;
 }
 
-.remove-border-bottom {
-    border-bottom: white;
+.news-image {
+    object-fit: cover;
 }
 
-.icon-green-custom {
-    color: rgb(87, 185, 87);
-}
+/*Currency Ex Modal*/
 
-.table-bottom-border-on {
-    border-bottom: solid;
-    border-color: #a6accf;
-    margin: 10px;
-    padding: 10px;
+.label-shift {
+    left: .75rem !important;
 }
 
 /* Media queries for small screens */
@@ -171,6 +199,7 @@ a.news {
         bottom: 55px;
     }
 
+
 }
 
 @media only screen and (max-width: 320px) {
@@ -178,5 +207,16 @@ a.news {
     div.country-info.leaflet-control {
         bottom: 68px;
     }
+
+}
+
+@media only screen and (max-height: 480px) {
+
+    div.country-info.leaflet-control {
+        left: 0;
+        right: 5px;
+        bottom: 0;
+    }
+
 
 }

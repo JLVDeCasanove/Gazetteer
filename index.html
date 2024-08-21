@@ -49,114 +49,211 @@
     <!-------------------   MODALS   ------------------------------------------->
 
     <!-- NEWS MODAL -->
-    <div id="news-modal" class="modal" data-bs-backdrop="false" tabindex="-1">
+    <div id="news-modal" class="modal fade" data-bs-backdrop="false" tabindex="-1">
       <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content shadow">
           <div class="modal-header bg-success bg-gradient text-white">
-            <h5 class="modal-title">Local News</h5>
+            <h5 class="modal-title" id="news-title">&nbsp;</h5>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-            <table class="table news" id="news-body">
 
-            </table>
-          </div>
-          <div class="modal-footer justify-content-between">
-            <a href="https://newsapi.org/" target="_blank" title="News API">News API</a>
-            <button type="button" class="btn btn-outline-success btn-sm" data-bs-dismiss="modal">Close</button>
-          </div>
-        </div>
-      </div>
-    </div>
+            <!--Pre-Loader-->
+            <div class="modal-loader"></div>
 
-    <!-- TIME MODAL -->
-    <div id="time-modal" class="modal" data-bs-backdrop="false" tabindex="-1">
-      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content shadow">
-          <div class="modal-header bg-success bg-gradient text-white">
-            <h5 class="modal-title" id="time-title">Local Time</h5>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            <div class="d-flex flex-column justify-content-center align-items-center">
-              <div class = "border border-1 rounded p-2 m-2">
-                <h3 class="text-center m-0" id="time-digital"></h3>
+            <!--Error Overlay-->
+            <div class="error-overlay">
+              <div class="error-icon-container">
+                <i class="fa-solid fa-circle-exclamation fa-2xl text-warning"></i>
               </div>
-              <p class = "text-center">UTC + <span id="utc-offset"></span></p>
+            </div>
+
+            <!--Modal Body-->
+
+            <!--Item 1-->
+            <div class="container">
+              <div class="row">
+                <div class="col-6 news-image-container">
+                  <img src="" id="news-1-img" class="news-image image-fluid rounded" height="100%" width="100%" aria-hidden="true">
+                </div>
+                <div class="col-6">
+                  <div class="row">
+                    <a href="" id="news-1-headline" class="fw-bold fs-6 text-black" target="_blank">&nbsp;</a>
+                  </div>
+                  <div class="row">
+                    <p id ="news-1-time" class="text-secondary fw-light fs-6">&nbsp;</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <hr>
+
+            <!--Item 2-->
+            <div class="container">
+              <div class="row">
+                <div class="col-6 news-image-container">
+                  <img src="" id="news-2-img" class="news-image image-fluid rounded" height="100%" width="100%" aria-hidden="true">
+                </div>
+                <div class="col-6">
+                  <div class="row">
+                    <a href="" id="news-2-headline" class="fw-bold fs-6 text-black" target="_blank">&nbsp;</a>
+                  </div>
+                  <div class="row">
+                    <p id ="news-2-time" class="text-secondary fw-light fs-6">&nbsp;</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <hr>
+
+            <!--Item 3-->
+            <div class="container">
+              <div class="row">
+                <div class="col-6 news-image-container">
+                  <img src="" id="news-3-img" class="news-image image-fluid rounded" height="100%" width="100%" aria-hidden="true">
+                </div>
+                <div class="col-6">
+                  <div class="row">
+                    <a href="" id="news-3-headline" class="fw-bold fs-6 text-black" target="_blank">&nbsp;</a>
+                  </div>
+                  <div class="row">
+                    <p id ="news-3-time" class="text-secondary fw-light fs-6">&nbsp;</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
           <div class="modal-footer justify-content-between">
-            <a href="https://www.geonames.org/" target="_blank">geonames.org</a>
+            <span class="d-flex flex-row align-items-start">
+              <p>Powered By:&nbsp;</p><a href="https://www.thenewsapi.com/" target="_blank" title="TheNewsAPI">TheNewsAPI</a>
+            </span>
             <button type="button" class="btn btn-outline-success btn-sm" data-bs-dismiss="modal">Close</button>
           </div>
         </div>
       </div>
     </div>
 
+
+    <!-- TIME MODAL -->
+    <div id="time-modal" class="modal fade" data-bs-backdrop="false" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content shadow">
+          <div class="modal-header bg-success bg-gradient text-white">
+            <h5 class="modal-title" id="time-title"></h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+
+            <!--Pre-Loader-->
+            <div class="modal-loader"></div>
+
+            <!--Error Overlay-->
+            <div class="error-overlay">
+              <div class="error-icon-container">
+                <i class="fa-solid fa-circle-exclamation fa-2xl text-warning"></i>
+              </div>
+            </div>
+
+            <!--Modal Body-->
+            <div class="d-flex flex-column align-items-center">
+              <div class = "border border-1 rounded p-2 m-2">
+                <h3 class="text-center m-0" id="time-digital">&nbsp;</h3>
+              </div>
+              <p class = "text-center" id="utc-offset">&nbsp;</p>
+            </div>
+          </div>
+          <div class="modal-footer justify-content-between">
+            <span class="d-flex flex-row align-items-start">
+              <p>Powered By:&nbsp;</p><a href="https://www.geonames.org/" target="_blank">geonames.org</a>
+            </span>
+            <button type="button" class="btn btn-outline-success btn-sm" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+ 
     <!-- WEATHER MODAL -->
     <div id="weather-modal" class="modal" data-bs-backdrop="false" tabindex="-1">
       <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content shadow">
           <div class="modal-header bg-success bg-gradient text-white">
-            <h5 class="modal-title">Local Weather</h5>
+            <h5 id="weather-title" class="modal-title">&nbsp;</h5>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-            <table class="table table-striped">
-              <tr><th class="text-center responsive-modal-text" colspan="3" id="weather-title"></th></tr>
-              <!-- TEMPERATURE -->
-              <tr id="weather-temperature-row">
-                <td class="text-center responsive-modal-text"><i class="fa-solid fa-temperature-half fa-xl icon-green-custom"></i></td>
-                <td class="responsive-modal-text">Temperature</td>
-                <td id="weather-temperature" class="text-end">
-                </td>
-              </tr>
-              <!-- CONDITION -->
-              <tr id="weather-condition-row">
-                <td class="text-center responsive-modal-text"><i class="fa-solid fa-cloud-sun-rain fa-xl icon-green-custom"></i></td>
-                <td class="responsive-modal-text">Conditions</td>
-                <td id="weather-condition" class="text-end responsive-modal-text">
-                </td>
-              </tr>
-              <!-- CLOUDS -->
-              <tr id="weather-clouds-row">
-                <td class="text-center responsive-modal-text"><i class="fa-solid fa-cloud fa-xl icon-green-custom"></i></td>
-                <td class="responsive-modal-text">Clouds</td>
-                <td id="weather-clouds" class="text-end responsive-modal-text">
-                </td>
-              </tr>
-              <!-- HUMIDITY -->
-              <tr id="weather-humidity-row">
-                <td class="text-center responsive-modal-text"><i class="fa-solid fa-droplet fa-xl icon-green-custom"></i></td>
-                <td class="responsive-modal-text">Humidity</td>
-                <td id="weather-humidity" class="text-end responsive-modal-text">
-                </td>
-              </tr>
-              <!-- WINDSPEED -->
-              <tr id="weather-windspeed-row">
-                <td class="text-center responsive-modal-text"><i class="fa-solid fa-wind fa-xl icon-green-custom"></i></td>
-                <td class="responsive-modal-text">Windspeed</td>
-                <td id="weather-windspeed" class="text-end responsive-modal-text">
-                </td>
-              </tr>
-              <!-- STATION -->
-              <tr id="weather-station-row">
-                <td class="text-center responsive-modal-text"><i class="fa-solid fa-tower-observation fa-xl icon-green-custom"></i></td>
-                <td class="responsive-modal-text">Station</td>
-                <td id="weather-station" class="text-end responsive-modal-text">
-                </td>
-              </tr>
-              <!-- DATE TIME -->
-              <tr id="weather-datetime-row">
-                <td class="text-center responsive-modal-text"><i class="fa-solid fa-calendar fa-xl icon-green-custom"></i></td>
-                <td class="responsive-modal-text">Observation at</td>
-                <td id="weather-datetime" class="text-end responsive-modal-text">
-                </td>
-              </tr>
-            </table>
+
+            <!--Pre-Loader-->
+            <div class="modal-loader"></div>
+
+            <!--Error Overlay-->
+            <div class="error-overlay">
+              <div class="error-icon-container">
+                <i class="fa-solid fa-circle-exclamation fa-2xl text-warning"></i>
+              </div>
+            </div>
+
+            <!--Modal Body-->
+            <div class="row">
+              <div class="col border rounded m-2">
+                <p id="weather-today-title" class="fw-bold fs-5 mt-1 ml-1">&nbsp;</p>
+                <div class="row">
+                  <div class="col text-center m-3">
+                    <p id="weather-today-conditions" class="fw-bold fs-6">&nbsp;</p>
+                  </div>
+                  <div class="col text-center">
+                    <img id="weather-today-img" class="img-fluid mt-0" src="" alt="" title="" aria-hidden="true">
+                  </div>
+                  <div class="col text-center">
+                    <p class="fw-bold fs-4 mb-0"><span id="weather-today-max-temp"></span><sup>o</sup><span class="tempMetric">c</span></p>
+                    <p class="fs-5 mt-0 text-secondary"><span id="weather-today-min-temp"></span><sup>o</sup><span class="tempMetric">c</span></p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col border rounded m-2">
+                <div class="row">
+                  <div class="col text-center">
+                    <p id="weather-day1-date" class="fw-bold fs-6 mt-3">&nbsp;</p>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col text-center">
+                    <p class="fw-bold fs-4 mb-0"><span id="weather-day1-max-temp"></span><sup>o</sup>c</p>
+                    <p class="fs-5 mt-0 text-secondary"><span id="weather-day1-min-temp"></span><sup>o</sup>c</p>
+                  </div>
+                  <div class="col text-center">
+                    <img id="weather-day1-img" src="" alt="" title="">
+                  </div>
+                </div>
+              </div>
+              <div class="col border rounded m-2">
+                <div class="row">
+                  <div class="col text-center">
+                    <p id="weather-day2-date" class="fw-bold fs-6 mt-3">&nbsp;</p>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col text-center">
+                    <p class="fw-bold fs-4 mb-0"><span id="weather-day2-max-temp"></span><sup>o</sup>c</p>
+                    <p class="fs-5 mt-0 text-secondary"><span id="weather-day2-min-temp"></span><sup>o</sup>c</p>
+                  </div>
+                  <div class="col text-center">
+                    <img id="weather-day2-img" src="" alt="" title="">
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col text-left">
+                  <p id="last-updated" class="text-secondary fs-6 mb-0 mt-2">&nbsp;</p>
+                </div>
+              </div>
+           </div>
           </div>
           <div class="modal-footer justify-content-between">
-            <a href="https://www.geonames.org/">geonames.org</a>
+            <span class="d-flex flex-row align-items-start">
+              <p>Powered by:&nbsp;</p><a href="https://www.weatherapi.com/" target="_blank" title="Free Weather API">WeatherAPI.com</a>
+            </span>
             <button type="button" class="btn btn-outline-success btn-sm" data-bs-dismiss="modal">Close</button>
           </div>
         </div>
@@ -168,38 +265,54 @@
         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
           <div class="modal-content shadow">
             <div class="modal-header bg-success bg-gradient text-white">
-              <h5 class="modal-title">Exchange Rates</h5>
+              <h5 id="currency-title" class="modal-title">&nbsp;</h5>
               <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-              <table class="table table-striped">
-                <tr><th class="text-center" colspan="6" id="currency-title"></th></tr>
-                
-                <tr>
-                  <td class="text-center" colspan="2">
-                    <select class="form-select" id="currency-from">
 
-                    </select>
-                  </td>
-                  <td class="text-center" colspan="2"><i class="fa-solid fa-arrow-right fa-2xl icon-green-custom" id="currency-arrow"></i></td>
-                  <td class="text-center" colspan="2">
-                    <select class="form-select" id="currency-to">
+              <!--Pre-Loader-->
+            <div class="modal-loader"></div>
 
-                    </select>
-                  </td>
-                </tr>
+            <!--Error Overlay-->
+            <div class="error-overlay">
+              <div class="error-icon-container">
+                <i class="fa-solid fa-circle-exclamation fa-2xl text-warning"></i>
+              </div>
+            </div>
 
-                <tr>
-                  <td class="text-center" colspan="3">
-                    <input id="number-from" class="form-control" type="number" min="0" max="10000000" value="1" aria-label="Amount to exchange from">
-                  </td>
-                  <td class="text-center align-middle" id="number-to" colspan="3"></td>
-                </tr>
+            <!--Modal Body-->
+            <form>
+              <div class="row">
+                <div class="col-4 form-floating mb-3">
+                  <input id="number-from" type="number" class="form-control" value="1" min="1" max="10000000" step="1">
+                  <label class="label-shift" for="number-from">Convert</label>
+                </div>
+      
+                <div class="col-8 form-floating mb-3">
+                  <select id="currency-from" class="form-select">
+                  </select>
+                  <label class="label-shift" for="currency-from">from</label>
+                </div>
+              </div>
+              
+              <div class="form-floating mb-3">
+                <select id="currency-to" class="form-select">
+                </select>
+                <label for="currency-to">to</label>
+              </div>
+              
+              <div class="form-floating">
+                <input id="number-to" type="text" class="form-control" disabled>
+                <label for="number-to">Result</label>
+              </div>
+    
+            </form>
 
-              </table>
             </div>
             <div class="modal-footer justify-content-between">
-              <a href="https://rapidapi.com/user/principalapis" target="_blank">Principal APIs</a>
+              <span class="d-flex flex-row align-items-start">
+                <p>Powered By:&nbsp;</p><a href="https://rapidapi.com/user/principalapis" target="_blank">Principal APIs</a>
+              </span>
               <button type="button" class="btn btn-outline-success btn-sm" data-bs-dismiss="modal">Close</button>
             </div>
           </div>
@@ -215,54 +328,31 @@
               <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-              <table class="table">
-                <tr class="remove-border-bottom">
-                  <td class="text-left align-middle" id="wiki-summary" colspan="2"></td>
-                </tr>
-              </table>
+            
+              <!--Pre-Loader-->
+            <div class="modal-loader"></div>
+
+            <!--Error Overlay-->
+            <div class="error-overlay">
+              <div class="error-icon-container">
+                <i class="fa-solid fa-circle-exclamation fa-2xl text-warning"></i>
+              </div>
+            </div>
+
+            <!--Modal Body-->
+              <p class="text-left align-middle" id="wiki-summary" colspan="2">&nbsp;</p>
             </div>
             <div class="modal-footer justify-content-between">
-              <a href="https://www.geonames.org/" target="_blank">geonames.org</a>
+              <span class="d-flex flex-row align-items-start">
+                <p>Powered By:&nbsp;</p><a href="https://www.geonames.org/" target="_blank">geonames.org</a>
+              </span>
               <button type="button" class="btn btn-outline-success btn-sm" data-bs-dismiss="modal">Close</button>
             </div>
           </div>
         </div>
       </div>
-
-      <!-- ATTRIBUTIONS MODAL -->
-       <!--///////////////////////////
-       //////////// FOR DELETION /////
-       //////////////////////////////
-       -->
-      <div id="attributions-modal" class="modal" data-bs-backdrop="false" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-          <div class="modal-content shadow">
-            <div class="modal-header bg-success bg-gradient text-white">
-              <h5 class="modal-title">Attributions</h5>
-              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-              <a href="https://www.leafletjs.com" target="_blank" title="leafletjs">Built using Leaflet</a><br>
-              <a href="https://github.com/Leaflet/Leaflet.markercluster" target="_blank" title="marker cluster">With the Marker Cluster Plugin</a><br>
-              <a href="https://www.arcgis.com/" target="_blank" title="ArcGIS Online">Maps tiles from ArcGIS Online</a><br>
-              <a href="https://www.geonames.org/" target="_blank" title="Geonames">Using data from geonames APIs</a><br>
-              <a href="http://geodb-cities-api.wirefreethought.com/" target="_blank" title="geoDB cities API">from GeoDB Cities API</a><br>
-              <a href="https://api-ninjas.com/api/airports" target="_blank" title="API Ninjas">from API Ninjas</a><br>
-              <a href="https://rapidapi.com" target="_blank" title="Rapid API">from Rapid API</a><br>
-              <a href="https://newsapi.org/" target="_blank" title="News API">from News API</a><br>
-              <a href="https://rapidapi.com/principalapis/api/currency-conversion-and-exchange-rates" target="_blank" title="Currency Conversion by Principal APIs">and from Principal APIs</a><br>
-              <a href="https://flagsapi.com/" target="_blank" title="flagsapi">Flag images from flagsapi.com</a><br>
-              <a href="https://www.jqueryscript.net/time-clock/analog-clock-timezone.html" target="_blank" title="htAnalogClock">Clock from htAnalogClock by dexise</a><br>
-              <a href="https://www.flaticon.com/free-icons/earth" target="_blank" title="earth icons">Earth icons created by Freepik - Flaticon</a>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-outline-success btn-sm" data-bs-dismiss="modal">Close</button>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-    <!-- Loader -->
+    
+    <!-- Page-Loader -->
 
     <div id="loader"></div>
 
@@ -272,6 +362,7 @@
     <script src="./libs/js/leaflet.js"></script>
     
     <!--//Add-on Libraries-->
+    <script src="./libs/js/date-en-GB.js"></script>
     <script src="./libs/js/easy-button.js"></script>
     <script src="./libs/js/leaflet.extra-markers.min.js"></script>
     <script src="./libs/js/leaflet.markercluster.js"></script>

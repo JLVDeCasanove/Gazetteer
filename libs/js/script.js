@@ -48,7 +48,33 @@ let currencyListPopulated = false;
 //functions
 const handlePOSTError = () => {
     $('#loader').hide();
-    console.log('POST request not fulfilled');
+    Toastify({
+        text: "An error occured when trying to fetch data from server",
+        duration: 3000,
+        close: true,
+        style: {
+            background: 'linear-gradient(to right, #dc3545, #ea868f)',
+            color : 'white'
+        }
+      }).showToast();
+}
+
+handleModalError = () => {
+    $('.error-overlay').show();
+    loadingComplete();
+}
+
+const loadingComplete = () => {
+    $('.modal-loader').addClass('fade-out');
+}
+
+const onModalClose = () => {
+    $('.error-overlay').hide();
+    $('.modal-loader').removeClass('fade-out');
+}
+
+const handleModalClose = () => {
+    setTimeout(onModalClose, 500);
 }
 
 
@@ -76,34 +102,12 @@ const baseLayers = {
 const defaultCountryStyle = (feature) => {
     return {
         fillColor: '#14A44D',
-        weight: 5,
+        weight: 4,
         color: '#231651',
         dashArray: '',
         fillOpacity: 0.5
     }
 };
-
-/* OBSOLETE STYLES
-const highlightedCountryStyle = {
-    fillColor: '#809848',
-    weight: 3,
-    color: '#666',
-    dashArray: '',
-    fillOpacity: 0.7
-};
-
-//OLD default coutnry style
-const selectedCountryStyle = {
-    fillColor: '#313B72',
-    weight: 2,
-    opacity: 1,
-    color: 'black',
-    dashArray: '3',
-    fillOpacity: 0.7
-};
-
-*/
-
 
 const cityIcon = L.ExtraMarkers.icon({
     svg: true,
@@ -132,36 +136,10 @@ const airportIcon = L.ExtraMarkers.icon({
     prefix: 'fa'
 });
 
-/*
-//Icons for map markers
-const cityIcon = L.divIcon({
-    html: '<i class="fa-solid fa-city fa-2xl"></i>',
-    iconSize: [32, 32],
-    className: 'city-icon'
-});
-
-const cityIconCapital = L.divIcon({
-    html: '<i class="fa-solid fa-star fa-2xl"></i>',
-    iconSize: [32, 32],
-    className: 'city-icon-capital'
-});
-
-const airportIcon = L.divIcon({
-    html: '<i class="fa-solid fa-plane fa-2xl"></i>',
-    iconSize: [32, 32],
-    className: 'airport-icon'
-});
-*/
-
 //add layer controls
 layerControl = L.control.layers(baseLayers);
 layerControl.addOverlay(cityMarkers, 'Cities');
 layerControl.addOverlay(airportMarkers, 'Airports');
-
-//Attributions modal
-const attributionsBtn = L.easyButton("fa-solid fa-copyright fa-xl", (btn, map) => {
-    $("#attributions-modal").modal("show");
-  });
 
 const getCountry = async (countryCode) => {
     let layer;
@@ -173,13 +151,10 @@ const getCountry = async (countryCode) => {
             country: countryCode
         },
         success: function(result) {
-    
-            console.log(JSON.stringify(result));
-            
-            if (result.status.name == "ok") {
+            if (result.status.name == "ok" && result.data) {
                 layer = result.data;
             } else {
-                console.log('error');
+                handlePOSTError();
             }
     
         },
@@ -189,6 +164,11 @@ const getCountry = async (countryCode) => {
     });
     return layer;
 }
+
+/////////////////////////////////////////////////////////////////////////////
+// ---HANDLING COUNTRY SELECT --- //////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
+
 
 const handleSelectCountry = async (countryCode) => {
     //make loader transparent to show map but disable input while country info loads
@@ -204,6 +184,11 @@ const handleSelectCountry = async (countryCode) => {
     .then((layer) => (L.geoJSON(layer, { style: defaultCountryStyle })).addTo(layerGroup))
     .then((layer) => map.fitBounds(layer.getBounds()))
     .then(() => {
+        if (!initialCountry) {
+            initialCountry = selectedCountry;
+        }
+    })
+    .then(() => {
         //update dropdown if needed
         const { iso_a2 } = selectedCountry.properties;
         if ($('#country-list').val() !== iso_a2) {
@@ -213,141 +198,55 @@ const handleSelectCountry = async (countryCode) => {
     .then(async () => {
         //Update country info
         const props = await getProps(selectedCountry)
-        .then((props) => countryInfo.update(props))
-
+        .then((props) => countryInfo.update(props));
         //adding cities
         const cities = await getCities(selectedCountry)
             .then((cities) => cityMarkers.addLayers(cities))
-            .then(() => cityMarkers.addTo(map));/*
+            .then(() => cityMarkers.addTo(map));
             
         //adding airports
         const airports = await getAirports(selectedCountry)
         .then((airports) => airportMarkers.addLayers(airports))
         .then(() => airportMarkers.addTo(map));
-        */
+        
     })
     .then(() => $('#loader').hide());
 }
 
-/* OLD HANDLER
-//Country Selection Handler
-const handleSelectCountry = async (layer) => {
-    //make loader transparent to show map but disable input while country info loads
-    $('#loader').css('background', '#ffffff25');
-    $('#loader').show();
-    //Deselect current selected country
-    if (selectedCountry) {
-        geojson.resetStyle(selectedCountry);
-        selectedCountry.isSelected = false;
-    }
-    //Set current target
-    selectedCountry = layer;
-
-    //clear marker layers
-    cityMarkers.clearLayers();
-    airportMarkers.clearLayers();
-
-    //highlight the new country
-    layer.setStyle(selectedCountryStyle);
-    layer.bringToFront;
-    //Tracking for reset style above
-    layer.isSelected = true;
-
-    //update dropdown if needed
-    const { iso_a2 } = selectedCountry.feature.properties;
-    if ($('#country-list').val() !== iso_a2) {
-        $('#country-list').val(iso_a2);
-    }
-
-    //zoom to country
-    map.fitBounds(layer.getBounds());
-
-    //Update country info
-    const props = await getProps(layer)
-        .then((props) => countryInfo.update(props))
-        .then(() => $('#loader').hide());
-    
-    //adding cities
-    const cities = await getCities(layer)
-        .then((cities) => cityMarkers.addLayers(cities))
-        .then(() => cityMarkers.addTo(map));
-
-    //adding airports
-    const airports = await getAirports(layer)
-    .then((airports) => airportMarkers.addLayers(airports))
-    .then(() => airportMarkers.addTo(map));
-
-};
-*/
-
-/////////////////////////////////////////////////////////////////////////////
-// ---EVENT LISTENERS --- //////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////
-
 //Selecting a country with the select dropdown box
 $('#country-list').on('change', (e) => {
-    selectedCountry = $('#country-list').val();
-    /*geojson.eachLayer((layer) => {
-        if (layer.feature.properties.iso_a2 === e.target.value) {
-            country = layer;
-        }
-    });*/
-    handleSelectCountry(selectedCountry);
+    handleSelectCountry($('#country-list').val());
 });
-
-/* OLD CLICK SELECT FEATURE
-//Selecting a country by clicking on the map
-const selectFeature = (e) => {
-    const country = e.target;
-    if (country !== selectedCountry) {
-        handleSelectCountry(country);
-    }
-};
-*/
-
-//Highting a country on mouseover
-const highlightFeature = (e) => {
-    const layer = e.target;
-    if (!layer.isSelected) {
-        layer.setStyle(highlightedCountryStyle);
-        layer.bringToFront();
-    }
-};
-
-//Removing country highlight on mouseleave
-const resetHighlight = (e) => {
-    const layer = e.target;
-    if (!layer.isSelected) {
-        geojson.resetStyle(layer);
-    }
-}
-
-
-/* Obsolete Listeners
-//tie functions to listeners
-const onEachFeature = (feature, layer) => {
-    layer.on({
-        mouseover: highlightFeature,
-        mouseout: resetHighlight,
-        click: selectFeature
-    });
-}
-*/
 
 
 /////////////////////////////////////////////////////////////////////////////
 // ---COUNTRY INFO FEATURE --- /////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////
 
-//Initilising custom control feature
-const countryInfo = L.control({position: 'bottomleft'});
+const countryInfo = L.control();
+//checks where to put the country info screen based on screen height
+const checkInfoPosition = () => {
+    if (window.matchMedia('(max-height: 480px)').matches) {
+        countryInfo.setPosition('bottomright');
+    } else {
+        countryInfo.setPosition('bottomleft');
+    }
+}
+checkInfoPosition();
 
+//check on resize
+$(window).resize(() => {
+    checkInfoPosition();
+    countryInfo.update(selectedCountry.properties);
+});
+
+//create element when added to map
 countryInfo.onAdd = function (map) {
     this._div = L.DomUtil.create('div', 'country-info');
     return this._div;
 };
 
-//Method for updating
+//update properties and add to element
 countryInfo.update = function (props) {
     const { iso_a2,
             continent,    
@@ -357,7 +256,8 @@ countryInfo.update = function (props) {
     } = props;
 
     //dynamic element creation
-    this._div.innerHTML = '<div id="country-info-id"><i id="more-info" class="fa-solid fa-angle-up text-muted"></i><br><img src=https://flagsapi.com/' + iso_a2 + '/shiny/64.png>'
+    if (props.iso_a2 && props.continent) {
+        this._div.innerHTML = '<div id="country-info-id"><i id="more-info" class="fa-solid fa-angle-up text-muted"></i><i id="close-more-info" class="fa-solid fa-angle-down text-muted"></i><br><img src=https://flagsapi.com/' + iso_a2 + '/shiny/64.png>'
         + '<h4>' + iso_a2 + '</h4></div><br>'
         + '<table class="table extra-info"><tr><th class="text-start">Continent</th><td class="text-end">' + continent + '</td></tr>'
         + '<tr><th class="text-start">Capital</th><td class="text-end">' + capital + '</td></tr>'
@@ -365,6 +265,9 @@ countryInfo.update = function (props) {
         + '<tr><th class="text-start">Population</th><td class="text-end">' + population + '</td></tr></table>';
     
     $('.country-info').show();
+    } else {
+        $('.country-info').hide();
+    }
 };
 
 //Ajax call for country info
@@ -378,10 +281,7 @@ const getProps = async (layer) => {
             country: props.iso_a2
         },
         success: function(result) {
-    
-            console.log(JSON.stringify(result));
-            
-            if (result.status.name == "ok") {
+            if (result.status.name == "ok" && result.data) {
                 const {
                     continentName,
                     capital,
@@ -401,7 +301,8 @@ const getProps = async (layer) => {
                 //adds currency code for currency feature
                 props.currencyCode = currencyCode;
             } else {
-                console.log('error');
+                $('.country-info').hide();
+                handlePOSTError();
             }
         },
         error: function(jqXHR, textStatus, errorThrown) {
@@ -412,15 +313,50 @@ const getProps = async (layer) => {
     return props;
 }
 
-//Toggle detailed info by clicking on the info box
-$('#map').on('mouseenter', '.country-info', () => {
+const hideExtraInfo = () => {
+    $('.extra-info').hide();
+    $('#more-info').show();
+    $('#close-more-info').hide();
+}
+
+const showExtraInfo = () => {
     $('.extra-info').show();
     $('#more-info').hide();
+}
+
+let extraInfo = false;
+
+//Toggle detailed info by mousing over
+$('#map').on('mouseenter', '.country-info', () => {
+    if (window.matchMedia('(min-width: 769px)').matches) {
+        showExtraInfo();
+    }
 });
 
 $('#map').on('mouseleave', '.country-info', () => {
-    $('.extra-info').hide();
-    $('#more-info').show();
+    if (window.matchMedia('(min-width: 769px)').matches) {
+        hideExtraInfo();
+    }
+});
+
+//toggle detailed info on click on moble devices
+$('#map').on('click', '.country-info', () => {
+    if (window.matchMedia('(max-width: 768px)').matches) {
+        hideExtraInfo();
+    }
+});
+
+$('#map').on('click', '.country-info', () => {
+    if (window.matchMedia('(max-width: 768px)').matches) {
+        if (extraInfo) {
+            hideExtraInfo();
+            extraInfo = false;
+        } else {
+            showExtraInfo();
+            $('#close-more-info').show();
+            extraInfo = true;
+        }
+    }
 });
 
 
@@ -442,26 +378,20 @@ const getCities = async (layer) => {
             country: layerData.iso_a2
         },
         success: function(result) {
-    
-            console.log(JSON.stringify(result));
-            
-            if (result.status.name == "ok") {
+            if (result.status.name == "ok" && result.data) {
                 let checkingArr = [];
                 const resultArray = result.data;
                 resultArray.forEach((city) => {
-                    //checking array to avoid duplicates from API call
-                    if (!checkingArr.includes(city.name)) {
-                        //check info stored by country info feature to identify capital and give different marker
-                        //Plus additional cases where API calls were mismatched
-                        if (city.name === layerData.capital || city.name === 'Reykjavík' || city.name === 'Delhi'|| city.name === 'City of Brussels'|| city.name === 'Naypyidaw') {
-                            //Store capital lat and lng data for weather feature
-                            layerData.capitalLat = city.latitude;
-                            layerData.capitalLng = city.longitude;
-                            cityArr.push(L.marker([city.latitude, city.longitude], {icon: cityIconCapital}).bindPopup('<p>' + city.name + '</p>'));
-                        } else {
-                            cityArr.push(L.marker([city.latitude, city.longitude], {icon: cityIcon}).bindPopup('<p>' + city.name + '</p>'));
-                        }
-                        checkingArr.push(city.name);
+                    //check info stored by country info feature to identify capital and give different marker
+                    //Plus additional cases where API calls were mismatched
+                    if (city.name === layerData.capital || city.name === 'Reykjavík' || city.name === 'Delhi'|| city.name === 'City of Brussels'|| city.name === 'Naypyidaw') {
+                        //Store capital lat and lng data for timezone feature
+                        layerData.capitalLat = city.latitude;
+                        layerData.capitalLng = city.longitude;
+                        //create marker group
+                        cityArr.push(L.marker([city.latitude, city.longitude], {icon: cityIconCapital}).bindPopup('<p>' + city.name + '</p>'));
+                    } else {
+                        cityArr.push(L.marker([city.latitude, city.longitude], {icon: cityIcon}).bindPopup('<p>' + city.name + '</p>'));
                     }
                 });
                 //Manually add Washington for US as API call was unable to retrieve without sub-optimal params
@@ -471,7 +401,7 @@ const getCities = async (layer) => {
                     layerData.capitalLng = -77.03637;
                 }
             } else {
-                console.log('error');
+                handlePOSTError();
             }
 
         },
@@ -496,17 +426,14 @@ const getAirports = async (layer) => {
             country: layerData.iso_a2
         },
         success: function(result) {
-    
-            console.log(JSON.stringify(result));
-            
-            if (result.status.name == "ok") {
+            if (result.status.name == "ok" && result.data) {
                 const resultArr = result.data;
                 resultArr.forEach((airport) => {
                     airportArr.push(L.marker([airport.latitude, airport.longitude], {icon: airportIcon}).bindPopup('<p>' + airport.name + '</p>'));
                 });
 
             } else {
-                console.log('error');
+                handlePOSTError();
             }
         
         },
@@ -528,47 +455,109 @@ const newsBtn = L.easyButton("fa-solid fa-newspaper fa-xl", (btn, map) => {
     $("#news-modal").modal("show");
   });
 
+//On modal close
+$('#news-modal').on('hidden.bs.modal', () => {
+    handleModalClose();
+});
+
+const hideNews = () => {
+    $('#news-1-headline').html('&nbsp;');
+    $('#news-1-link').attr('src', '');
+    $('#news-1-time').html('&nbsp;')
+    $('#news-1-img').attr('src', '');
+    $('#news-2-headline').html('&nbsp;');
+    $('#news-2-link').attr('src', '');
+    $('#news-2-time').html('&nbsp;')
+    $('#news-2-img').attr('src', '');
+    $('#news-3-headline').html('&nbsp;');
+    $('#news-3-link').attr('src', '');
+    $('#news-3-time').html('&nbsp;')
+    $('#news-3-img').attr('src', '');
+}
+
 //Ajax call and modal population
 const getNews = (layer) => {
-    const layerData = layer.properties;
-    $('news-body').html('<p>Loading Local News...</p>');
+    const { iso_a2 } = layer.properties;
+    targetCountry = iso_a2.toLowerCase();
+    hideNews();
+    $('#news-title').html('Getting local news...');
     $.ajax({
         url: "./libs/php/news.php",
         type: 'POST',
         dataType: 'json',
         data: {
-            country: layerData.iso_a2
+            country: targetCountry,
         },
         success: function(result) {
+            if (result.status.name == "ok" && result.data) {
+                const { 
+                    news1,
+                    news2,
+                    news3,
+                } = result.data;
 
-            console.log(JSON.stringify(result));
-            
-            if (result.status.name == "ok") {
-                $('#news-body').html('');
-                const articles = result.data.articles;
-                if (articles[0]) {
-                    articles.forEach((article) => {
-                        $('#news-body').append(
-                            '<tr><th colspan="2"><a class="news responsive-modal-text" href="'
-                            + article.url + '" target="blank"><i class="fa-regular fa-newspaper fa-xl icon-green-custom"></i>  '
-                            + article.title + '</a></th></tr>'
-                            + '<tr class="table-bottom-border-on"><td class="responsive-modal-text text-center">Source: '
-                            + article.source.name + '</td>'
-                            + '<td class="responsive-modal-text text-center">Date: '
-                            + new Date(article.publishedAt).toDateString() + '</td></tr>'
-                        );
-                    });
-                } else {
-                    $('#news-body').html('<tr><th>No Local News Found</th></tr>');
+                const convertToElapsedTime = (date) => {
+                    const day = 86400000;
+                    const hour = 3600000;
+                    const min = 60000;
+                    const now = Date.now();
+                    const diff = now - date;
+                    if (diff >= day * 7) {
+                        return 'More than a week ago';
+                    } else if (diff >= day) {
+                        days = Math.floor(diff / day);
+                        if (days > 1) {
+                            return days + ' days ago';
+                        } else {
+                            return 'yesterday';
+                        };
+                    } else if (diff >= hour) {
+                        hours = Math.floor(diff / hour);
+                        if (hours >= 1) {
+                            return hours + ' hours ago';
+                        } else {
+                            return '1 hour ago';
+                        }
+                    } else if (diff >= min) {
+                        const mins = Math.floor(diff/min);
+                        if (mins > 1) {
+                            return mins + ' mins ago';
+                        } else {
+                            return '1 minute ago';
+                        }
+                    } else {
+                        return 'Less than a minute ago';
+                    }
                 }
-                
+
+                news1.time = convertToElapsedTime(new Date(news1.rawTime));
+                news2.time = convertToElapsedTime(new Date(news2.rawTime));
+                news3.time = convertToElapsedTime(new Date(news3.rawTime));
+
+                $('#news-title').html('Top Headlines');
+                $('#news-1-img').attr('src', news1.img);
+                $('#news-1-headline').html(news1.headline);
+                $('#news-1-headline').attr('href', news1.link);
+                $('#news-1-time').html(news1.time);
+                $('#news-2-img').attr('src', news2.img);
+                $('#news-2-headline').html(news2.headline);
+                $('#news-2-headline').attr('href', news2.link);
+                $('#news-2-time').html(news2.time)
+                $('#news-3-img').attr('src', news3.img);
+                $('#news-3-headline').html(news3.headline);
+                $('#news-3-headline').attr('href', news3.link);
+                $('#news-3-time').html(news3.time);
+                loadingComplete();
             } else {
-                console.log('error');
+                $('#news-title').html('No Local News Found');
+                hideNews();
+                handleModalError();
             }
         },
         error: function(jqXHR, textStatus, errorThrown) {
-            $('#news-body').html('<tr><th>No Local News Found</th></tr>');
-            handlePOSTError();
+            $('#news-title').html('No Local News Found');
+            hideNews();
+            handleModalError();
         }
     });
 }
@@ -583,6 +572,17 @@ const timeBtn = L.easyButton("fa-solid fa-clock fa-xl", (btn, map) => {
     $("#time-modal").modal("show");
   });
 
+//Handle modal close
+$('#time-modal').on('hide.bs.modal', () => {
+    clearInterval(timerInterval);
+    handleModalClose();
+});
+
+const hideTime = () => {
+    $('#time-digital').html('&nbsp;')
+    $('#utc-offset').html('&nbsp;');
+}
+
 //Digital clock
 const showTime = () => {    
     const timezone = selectedTimezone;
@@ -593,21 +593,16 @@ const showTime = () => {
     const hour = targetDate.getHours();
     const min = targetDate.getMinutes();
     const sec = targetDate.getSeconds();
-    const currentTime = `${hour.toString().padStart(2, 0)}:${min.toString().padStart(2, 0)}:${sec.toString().padStart(2, 0)}`;
+    const currentTime = `${hour.toString().padStart(2, 0)} : ${min.toString().padStart(2, 0)} : ${sec.toString().padStart(2, 0)}`;
 
     $('#time-digital').html(currentTime);
 }
 
-//Clear interval on modal close
-$('#time-modal').on('hide.bs.modal', () => {
-    clearInterval(timerInterval);
-});
-
 //Ajax call and modal population
 const getTime = (layer) => {
     const layerInfo = layer.properties;
-    $('#time-title').html('Loading...');
-    $('#time-digital').html('');
+    hideTime();
+    $('#time-title').html('Getting local time...');
     $.ajax({
         url: "./libs/php/timezone.php",
         type: 'POST',
@@ -617,24 +612,25 @@ const getTime = (layer) => {
             longitude: layerInfo.capitalLng
         },
         success: function(result) {
-
-            console.log(JSON.stringify(result));
-            
-            if (result.status.name == "ok") {
+            if (result.status.name == "ok" && result.data) {
                 const timezoneInfo = result.data;
                 selectedTimezone = timezoneInfo.timezoneId;
                 $('#time-title').html(timezoneInfo.timezoneId);
-                $('#utc-offset').html(timezoneInfo.gmtOffset);
+                $('#utc-offset').html('UTC + ' + timezoneInfo.gmtOffset);
                 //digital clock
                 timerInterval = setInterval(showTime, 100);
                 showTime();
+                loadingComplete();
             } else {
-                console.log('error');
+                $('#time-title').html('Timezone not found.');
+                hideTime();
+                handleModalError();
             }
         },
         error: function(jqXHR, textStatus, errorThrown) {
             $('#time-title').html('Timezone not found.');
-            handlePOSTError();
+            hideTime();
+            handleModalError();
         }
     });
 }
@@ -649,67 +645,84 @@ const weatherBtn = L.easyButton("fa-solid fa-cloud-sun-rain fa-xl", (btn, map) =
     $("#weather-modal").modal("show");
   });
 
-//functions for showing and hiding info
-const hideWeatherInfo = () => {
-    $('#weather-temperature-row').hide();
-    $('#weather-condition-row').hide();
-    $('#weather-clouds-row').hide();
-    $('#weather-humidity-row').hide();
-    $('#weather-windspeed-row').hide();
-    $('#weather-station-row').hide();
-    $('#weather-datetime-row').hide();
-}
+//On modal close
+$('#weather-modal').on('hidden.bs.modal', () => {
+    handleModalClose();
+});
 
-const showWeatherInfo = () => {
-    $('#weather-temperature-row').show();
-    $('#weather-condition-row').show();
-    $('#weather-clouds-row').show();
-    $('#weather-humidity-row').show();
-    $('#weather-windspeed-row').show();
-    $('#weather-station-row').show();
-    $('#weather-datetime-row').show();
+const hideForecast = () => {
+    $('#weather-today-title').html('&nbsp;');
+    $('#weather-today-conditions').html('&nbsp;');
+    $('#weather-today-img').attr('src', '');
+    $('#weather-today-max-temp').html('&nbsp;');
+    $('#weather-today-min-temp').html('&nbsp;');
+    $('#weather-day1-date').html('&nbsp;');
+    $('#weather-day1-img').attr('src', '');
+    $('#weather-day1-img').attr('alt', '');
+    $('#weather-day1-img').attr('title', '');
+    $('#weather-day1-max-temp').html('&nbsp;');
+    $('#weather-day1-min-temp').html('&nbsp;');
+    $('#weather-day2-date').html('&nbsp;');
+    $('#weather-day2-img').attr('src', '');
+    $('#weather-day2-img').attr('alt', '');
+    $('#weather-day2-img').attr('title', '');
+    $('#weather-day2-max-temp').html('&nbsp;');
+    $('#weather-day2-min-temp').html('&nbsp;');
+    $('#last-updated').html('&nbsp;');
 }
 
 //Ajax call and modal population
 const getWeather = (layer) => {
-    layerInfo = layer.properties;
-    $('#weather-title').html('Loading...')
-    hideWeatherInfo();
+    const { capital } = layer.properties;
+    $('#weather-title').html('Getting local weather...')
 
     $.ajax({
         url: "./libs/php/weather.php",
         type: 'POST',
         dataType: 'json',
         data: {
-            latitude: layerInfo.capitalLat,
-            longitude: layerInfo.capitalLng
+            capital: capital
         },
         success: function(result) {
-
-            console.log(JSON.stringify(result));
-            if (result.status.name == "ok") {
-                $('#weather-title').html('Weather in ' + layerInfo.capital);
-
-                $('#weather-temperature').html(result['data']['temperature'] + '&degC');
-                if (result['data']['weatherCondition'] && result['data']['weatherCondition'] !== 'n/a') {
-                    $('#weather-condition').html(result['data']['weatherCondition']);
-                } else {
-                    $('#weather-condition').html('N/A');
-                }
-                $('#weather-clouds').html(result['data']['clouds']);
-                $('#weather-humidity').html(result['data']['humidity'] + '&#37');
-                $('#weather-windspeed').html(result['data']['windSpeed'] + ' knots');
-                $('#weather-station').html(result['data']['stationName']);
-                $('#weather-datetime').html(new Date(result['data']['datetime']).toLocaleString());
-                showWeatherInfo();
+            if (result.status.name == "ok" && result.data) {
+                const {
+                    todayForecast,
+                    day1Forecast,
+                    day2Forecast,
+                    lastUpdated
+                } = result.data;
+                $('#weather-title').html(capital);
+                $('#weather-today-title').html('TODAY');
+                $('#weather-today-conditions').html(todayForecast.conditions);
+                $('#weather-today-img').attr('src', todayForecast.imgUrl);
+                $('#weather-today-max-temp').html(todayForecast.maxTemp);
+                $('#weather-today-min-temp').html(todayForecast.minTemp);
+                $('#weather-day1-date').html(Date.parse(day1Forecast.date).toString('ddd dS'));
+                $('#weather-day1-img').attr('src', day1Forecast.imgUrl);
+                $('#weather-day1-img').attr('alt', day1Forecast.conditions);
+                $('#weather-day1-img').attr('title', day1Forecast.conditions);
+                $('#weather-day1-max-temp').html(day1Forecast.maxTemp);
+                $('#weather-day1-min-temp').html(day1Forecast.minTemp);
+                $('#weather-day2-date').html(Date.parse(day2Forecast.date).toString('ddd dS'));
+                $('#weather-day2-img').attr('src', day2Forecast.imgUrl);
+                $('#weather-day2-img').attr('alt', day2Forecast.conditions);
+                $('#weather-day2-img').attr('title', day2Forecast.conditions);
+                $('#weather-day2-max-temp').html(day2Forecast.maxTemp);
+                $('#weather-day2-min-temp').html(day2Forecast.minTemp);
+                $('#last-updated').html('Last Updated: ' + Date.parse(lastUpdated).toString("HH:mm, dS MMM"));
+                loadingComplete();
+            } else {
+                $('#weather-title').html('Forecast not Found')
+                hideForecast();
+                handleModalError();
             }
         },
         error: function(jqXHR, textStatus, errorThrown) {
-            $('#weather-title').html('No Observation Found')
-            hideWeatherInfo();
-            handlePOSTError();
+            $('#weather-title').html('Forecast not Found')
+            hideForecast();
+            handleModalError();
         }
-    }); 
+    });
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -722,9 +735,27 @@ const currencyBtn = L.easyButton("fa-solid fa-coins fa-xl", (btn, map) => {
     $("#currency-modal").modal("show");
   });
 
+//On modal close
+$('#currency-modal').on('hidden.bs.modal', () => {
+    handleModalClose();
+});
+
+//function to convert ExRate
+const formatExRate = (targetExTo, rate) => {
+    zeroDecPlaces = ['CVE', 'DJF', 'GNF', 'IDR', 'JPY', 'KMF', 'KRW', 'PYG', 'RWF', 'UGX', 'VND', 'VUV', 'XAF', 'XOF', 'XPF'];
+    threeDecPlaces = ['BHD', 'IQD', 'JOD', 'KWD', 'LYD', 'OMR', 'TND'];
+    if (zeroDecPlaces.includes(targetExTo)) {
+        return Math.round(rate);
+    } else if (threeDecPlaces.includes(targetExTo)) {
+        return parseFloat(rate.toFixed(3));
+    } else {
+        return parseFloat(rate.toFixed(2));
+    }
+};
+
 const handleCurrencyButton = async () => {
-    const defaultExFrom = initialCountry.feature.properties.currencyCode;
-    const defaultExTo = selectedCountry.feature.properties.currencyCode;
+    const defaultExFrom = initialCountry.properties.currencyCode;
+    const defaultExTo = selectedCountry.properties.currencyCode;
     //populate the select lists if empty
     if (!currencyListPopulated) {
         await populateCurrencyList();
@@ -741,10 +772,12 @@ const handleCurrencyButton = async () => {
     if (!defaultExTo) {
         $('#currency-title').html('Currency code not found');
         $('#number-to').html('');
+        loadingComplete();
     //show message if currency codes to and from are equal
     } else if (exFrom === exTo) {
         $('#currency-title').html('Please select 2 different currencies to convert');
         $('#number-to').html('');
+        loadingComplete();
     } else {
         //call ajax and update values
         getExchangeRate(exFrom, exTo, $('#number-from').val());
@@ -759,32 +792,30 @@ const populateCurrencyList = async () => {
         dataType: 'json',
         data: {},
         success: function(result) {
-
-            console.log(JSON.stringify(result));
-            
-            if (result.status.name == "ok") {
+            if (result.status.name == "ok" && result.data) {
                 const currencyArr = result.data;
-                currencyArr.forEach((cCode) => {
-                    $('#currency-from').append('<option>' + cCode + '</option>');
-                    $('#currency-to').append('<option>' + cCode + '</option>');
+                currencyArr.forEach((currency) => {
+                    $('#currency-from').append('<option value="' + currency.code + '">' + currency.name + '</option>');
+                    $('#currency-to').append('<option value="' + currency.code + '">' + currency.name + '</option>');
                 })
                 currencyListPopulated = true;
-                $('#currency-from').val(initialCountry.feature.properties.currencyCode);
-                $('#currency-to').val(selectedCountry.feature.properties.currencyCode);
+                $('#currency-from').val(initialCountry.properties.currencyCode);
+                $('#currency-to').val(selectedCountry.properties.currencyCode);
             } else {
-                console.log('error');
+                $('#currency-title').html('Currency code Not found...');
+                handleModalError();
             }
         },
         error: function(jqXHR, textStatus, errorThrown) {
             $('#currency-title').html('Currency code Not found...');
-            handlePOSTError();
+            handleModalError();
         }
     });
 }
 
 //Ajax call and modal population
 const getExchangeRate = (exFrom, exTo, amount) => {
-    $('#currency-title').html('Loading...');
+    $('#currency-title').html('Getting exchange rates...');
     $.ajax({
         url: "./libs/php/currency-exchange.php",
         type: 'POST',
@@ -795,22 +826,22 @@ const getExchangeRate = (exFrom, exTo, amount) => {
             amountToExchange: amount
         },
         success: function(result) {
-
-            console.log(JSON.stringify(result));
-            
-            if (result.status.name == "ok") {
-
+            if (result.status.name == "ok" && result.data) {
                 const exRate = result.data.result;
+                const formattedExRate = formatExRate(exTo, exRate);
                 $('#currency-title').html('Exchange Rate');
-                $('#number-to').html(exRate);
+                $('#number-to').val(formattedExRate);
+                loadingComplete();
             } else {
-                console.log('error');
+                $('#currency-title').html('Currency code not found');
+                $('#number-to').val('');
+                handleModalError();
             }
         },
         error: function(jqXHR, textStatus, errorThrown) {
             $('#currency-title').html('Currency code not found');
-            $('#number-to').html('');
-            handlePOSTError();
+            $('#number-to').val('');
+            handleModalError();
         }
     });
 }
@@ -834,10 +865,15 @@ $('#number-from').on('change', () => {
 
 
 //Button and modal handler
-const wikiBtn = L.easyButton("fa-solid fa-w fa-xl", (btn, map) => {
+const wikiBtn = L.easyButton("fa-solid fa-book fa-xl", (btn, map) => {
     getWiki(selectedCountry);
     $("#wiki-modal").modal("show");
   });
+
+//On modal close
+$('#wiki-modal').on('hidden.bs.modal', () => {
+    handleModalClose();
+});
 
 //Function for formatting country names for Wikipedia API search
 const formatCountry = (country) => {
@@ -871,11 +907,10 @@ const formatCountry = (country) => {
 
 //Ajax call and modal population
 const getWiki = (layer) => {
-    $('#wiki-title').html('Loading...');
-    $('#wiki-summary').html('');
-    $('#wiki-link').attr('href', 'https://www.wikipedia.org/');
-    const countryRequest = layer.properties.name;
-    const formattedCountry = formatCountry(countryRequest);
+    $('#wiki-title').html('Getting Wiki entries...');
+    $('#wiki-summary').html('&nbsp;');
+    const { name } = layer.properties;
+    const formattedCountry = formatCountry(name);
     $.ajax({
         url: "./libs/php/wikipedia.php",
         type: 'POST',
@@ -884,21 +919,21 @@ const getWiki = (layer) => {
             country: formattedCountry
         },
         success: function(result) {
-
-            console.log(JSON.stringify(result));
-            
-            if (result.status.name == "ok") {
+            if (result.status.name == "ok" && result.data) {
                 const wikiEntry = result.data;
                 const summaryWithLink = wikiEntry.summary.replace('...', '<a href="https://' + wikiEntry.wikipediaUrl + '" target="_blank" title="read full article">...</a>')
                 $('#wiki-summary').html(summaryWithLink);
+                loadingComplete();
             } else {
-                console.log('error');
+                $('#wiki-title').html('Entry not found');
+                $('#wiki-summary').html('Please go to <a href="https://www.wikipedia.org/">https://www.wikipedia.org/</a> and search manually.');
+                handleModalError();
             }
         },
         error: function(jqXHR, textStatus, errorThrown) {
             $('#wiki-title').html('Entry not found');
             $('#wiki-summary').html('Please go to <a href="https://www.wikipedia.org/">https://www.wikipedia.org/</a> and search manually.');
-            handlePOSTError();
+            handleModalError();
         }
     });
 }
@@ -927,19 +962,24 @@ const onLocationFound = async (e) => {
                 }
             }
         })
-        //set initial country for currency feature
-        initialCountry = country;
         //select the initial country
         handleSelectCountry(country);
     } catch (err) {
-        console.log(err);
+        handlePOSTError();
     }
 }
 
 //function for when location not found
 const onLocationError = () => {
-    console.log('Location not found. Random country selected.');
-    initialCountry = randomCountry;
+    Toastify({
+        text: "Your locatuion could not be found. Random country selected.",
+        duration: 3000,
+        close: true,
+        style: {
+            background: 'linear-gradient(to right, #ffc107, #ffda6a)',
+            color : 'black'
+        }
+      }).showToast();
     handleSelectCountry(randomCountry);
 }
 
@@ -971,10 +1011,7 @@ $(document).ready(() => {
         dataType: 'json',
         data: {},
         success: function(result) {
-
-            console.log(JSON.stringify(result));
-            
-            if (result.status.name == "ok") {
+            if (result.status.name == "ok" && result.data) {
                 countryArr = result.data;
                 //store a random country for when country not found
                 randomCountry = countryArr[Math.random() * (countryArr.length - 1)];
@@ -984,7 +1021,7 @@ $(document).ready(() => {
                 });
 
             } else {
-                console.log('error');
+                handlePOSTError();
             }
         
         },
@@ -998,39 +1035,5 @@ $(document).ready(() => {
     map.locate();
     map.on('locationfound', onLocationFound);
     map.on('locationerror', onLocationError);
-
-    /*OLD CODE FOR POPULATING BORDERS
-    //Ajax for adding GeoJSON borders
-    $.ajax({
-        url: "./libs/php/geojson-borders.php",
-        type: 'POST',
-        dataType: 'json',
-        data: {},
-        success: function(result) {
-
-            console.log(JSON.stringify(result));
-            
-            if (result.status.name == "ok") {
-                const mapData = result.data;
-                //add borders
-                geojson = L.geoJson(mapData, {
-                    style: defaultCountryStyle,
-                    onEachFeature: onEachFeature
-                }).addTo(map);
-
-                //Find initial location, initial country selected if found, otherwise select a random country
-                map.locate();
-                map.on('locationfound', onLocationFound);
-                map.on('locationerror', onLocationError);
-            } else {
-                console.log('error');
-            }
-
-        },
-        error: function(jqXHR, textStatus, errorThrown) {
-            handlePOSTError();
-        }
-    });
-    */
 
 });

@@ -1,32 +1,73 @@
 <?php
     $env = parse_ini_file('../../.env');
-	$apiKey = $env['NEWS_API_KEY'];
-	$userAgent = $_SERVER['HTTP_USER_AGENT'];
-
-	ini_set('display_errors', 'On');
-	error_reporting(E_ALL);
-
+	$apiKey = $env['THE_NEWS_API_KEY'];
 	$executionStartTime = microtime(true);
-	$header = ['User-agent: ' . $userAgent];
-	$url='https://newsapi.org/v2/top-headlines?pageSize=10&country=' . $_REQUEST['country'] . '&apiKey=' . $apiKey;
+	$url='https://api.thenewsapi.com/v1/news/top?api_token=' . $apiKey . '&locale=' . $_POST['country'];
 
 	$ch = curl_init();
 	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 	curl_setopt($ch, CURLOPT_URL,$url);
-	curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
 
 	$result=curl_exec($ch);
 
+	$cURLERROR = curl_errno($ch);
+
 	curl_close($ch);
 
+	if ($cURLERROR) {
+
+		$output['status']['code'] = $cURLERROR;
+		$output['status']['name'] = "Failure - cURL";
+		$output['status']['description'] = curl_strerror($cURLERROR);
+		$output['status']['seconds'] = number_format((microtime(true) - $executionStartTime), 3);
+		$output['data'] = null;
+	
+		echo json_encode($output);
+	
+		exit;
+	}
+
 	$decode = json_decode($result,true);
+
+	if (json_last_error() !== JSON_ERROR_NONE) {
+		$output['status']['code'] = json_last_error();
+		$output['status']['name'] = "Failure - JSON";
+		$output['status']['description'] = json_last_error_msg();
+		$output['status']['seconds'] = number_format((microtime(true) - $executionStartTime), 3);
+		$output['data'] = null;
+
+		echo json_encode($output);
+
+		exit;
+	}
+
+	if (isset($decode['error']) || $decode['meta']['found'] === 0) {
+        $output['status']['name'] = "Failure - API";
+		$output['status']['code'] = $decode['error']['code'];
+        $output['status']['description'] = $decode['error']['message'];
+  	  	$output['status']['seconds'] = number_format((microtime(true) - $executionStartTime), 3);
+	  	$output['data'] = null;
+
+		echo json_encode($output);
+
+		exit;
+	}
+
+	$i = 0;
+	while ($i < 3) {
+		$headlines['news' . $i + 1]['headline'] = $decode['data'][$i]['title'];
+		$headlines['news' . $i + 1]['link'] = $decode['data'][$i]['url'];
+		$headlines['news' . $i + 1]['rawTime'] = $decode['data'][$i]['published_at'];
+		$headlines['news' . $i + 1]['img'] = $decode['data'][$i]['image_url'];
+		$i++;
+	}
 
 	$output['status']['code'] = "200";
 	$output['status']['name'] = "ok";
 	$output['status']['description'] = "success";
 	$output['status']['returnedIn'] = intval((microtime(true) - $executionStartTime) * 1000) . " ms";
-	$output['data'] = $decode;
+	$output['data'] = $headlines;
 
 	header('Content-Type: application/json; charset=UTF-8');
 
