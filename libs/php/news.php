@@ -42,7 +42,7 @@
 		exit;
 	}
 
-	if (isset($decode['error'])) {
+	if (isset($decode['error']) || $decode['meta']['found'] === 0) {
         $output['status']['name'] = "Failure - API";
 		$output['status']['code'] = $decode['error']['code'];
         $output['status']['description'] = $decode['error']['message'];

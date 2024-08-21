@@ -43,7 +43,7 @@
 		exit;
 	}
 
-	if (isset($decode['status'])) {
+	if (isset($decode['status']) || $decode['geonames'] === []) {
         $output['status']['name'] = "Failure - API";
         $output['status']['description'] = $decode['status']['message'];
   	  	$output['status']['seconds'] = number_format((microtime(true) - $executionStartTime), 3);
