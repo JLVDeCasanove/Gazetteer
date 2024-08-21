@@ -52,7 +52,7 @@
       <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content shadow">
           <div class="modal-header bg-success bg-gradient text-white">
-            <h5 class="modal-title">Local News</h5>
+            <h5 class="modal-title" id="news-title">&nbsp;</h5>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
@@ -68,20 +68,70 @@
             </div>
 
             <!--Modal Body-->
-            <table class="table news" id="news-body">
 
-            </table>
+            <!--Item 1-->
+            <div class="container">
+              <div class="row">
+                <div class="col-6 news-image-container">
+                  <img src="" id="news-1-img" class="image-fluid rounded" height="100%" width="100%" aria-hidden="true">
+                </div>
+                <div class="col-6">
+                  <div class="row">
+                    <a href="" id="news-1-headline" class="fw-bold fs-6 text-black" target="_blank">&nbsp;</a>
+                  </div>
+                  <div class="row">
+                    <p id ="news-1-time" class="text-secondary fw-light fs-6">&nbsp;</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <hr>
+
+            <!--Item 2-->
+            <div class="container">
+              <div class="row">
+                <div class="col-6 news-image-container">
+                  <img src="" id="news-2-img" class="image-fluid rounded" height="100%" width="100%" aria-hidden="true">
+                </div>
+                <div class="col-6">
+                  <div class="row">
+                    <a href="" id="news-2-headline" class="fw-bold fs-6 text-black" target="_blank">&nbsp;</a>
+                  </div>
+                  <div class="row">
+                    <p id ="news-2-time" class="text-secondary fw-light fs-6">&nbsp;</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <hr>
+
+            <!--Item 3-->
+            <div class="container">
+              <div class="row">
+                <div class="col-6 news-image-container">
+                  <img src="" id="news-3-img" class="image-fluid rounded" height="100%" width="100%" aria-hidden="true">
+                </div>
+                <div class="col-6">
+                  <div class="row">
+                    <a href="" id="news-3-headline" class="fw-bold fs-6 text-black" target="_blank">&nbsp;</a>
+                  </div>
+                  <div class="row">
+                    <p id ="news-3-time" class="text-secondary fw-light fs-6">&nbsp;</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
           <div class="modal-footer justify-content-between">
             <span class="d-flex flex-row align-items-start">
-              <p>Powered By:&nbsp;</p><a href="https://newsapi.org/" target="_blank" title="News API">News API</a>
+              <p>Powered By:&nbsp;</p><a href="https://www.thenewsapi.com/" target="_blank" title="TheNewsAPI">TheNewsAPI</a>
             </span>
-            <a href="https://newsapi.org/" target="_blank" title="News API">News API</a>
             <button type="button" class="btn btn-outline-success btn-sm" data-bs-dismiss="modal">Close</button>
           </div>
         </div>
       </div>
     </div>
+
 
     <!-- TIME MODAL -->
     <div id="time-modal" class="modal fade" data-bs-backdrop="false" tabindex="-1">
@@ -143,7 +193,7 @@
 
             <!--Modal Body-->
             <div class="row">
-              <div class="col border m-2">
+              <div class="col border rounded m-2">
                 <p id="weather-today-title" class="fw-bold fs-5 mt-1 ml-1">&nbsp;</p>
                 <div class="row">
                   <div class="col text-center m-3">
@@ -160,7 +210,7 @@
               </div>
             </div>
             <div class="row">
-              <div class="col border m-2">
+              <div class="col border rounded m-2">
                 <div class="row">
                   <div class="col text-center">
                     <p id="weather-day1-date" class="fw-bold fs-6 mt-3">&nbsp;</p>
@@ -176,7 +226,7 @@
                   </div>
                 </div>
               </div>
-              <div class="col border m-2">
+              <div class="col border rounded m-2">
                 <div class="row">
                   <div class="col text-center">
                     <p id="weather-day2-date" class="fw-bold fs-6 mt-3">&nbsp;</p>
@@ -194,7 +244,7 @@
               </div>
               <div class="row">
                 <div class="col text-left">
-                  <p id="last-updated" class="text-secondary mb-0 mt-1">&nbsp;</p>
+                  <p id="last-updated" class="text-secondary fs-6 mb-0 mt-2">&nbsp;</p>
                 </div>
               </div>
            </div>
@@ -287,50 +337,12 @@
             </div>
 
             <!--Modal Body-->
-              <table class="table">
-                <tr class="remove-border-bottom">
-                  <td class="text-left align-middle" id="wiki-summary" colspan="2"></td>
-                </tr>
-              </table>
+              <p class="text-left align-middle" id="wiki-summary" colspan="2">&nbsp;</p>
             </div>
             <div class="modal-footer justify-content-between">
               <span class="d-flex flex-row align-items-start">
                 <p>Powered By:&nbsp;</p><a href="https://www.geonames.org/" target="_blank">geonames.org</a>
               </span>
-              <button type="button" class="btn btn-outline-success btn-sm" data-bs-dismiss="modal">Close</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ATTRIBUTIONS MODAL -->
-       <!--///////////////////////////
-       //////////// FOR DELETION /////
-       //////////////////////////////
-       -->
-      <div id="attributions-modal" class="modal" data-bs-backdrop="false" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-          <div class="modal-content shadow">
-            <div class="modal-header bg-success bg-gradient text-white">
-              <h5 class="modal-title">Attributions</h5>
-              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-              <div class="modal-loader"></div>
-              <a href="https://www.leafletjs.com" target="_blank" title="leafletjs">Built using Leaflet</a><br>
-              <a href="https://github.com/Leaflet/Leaflet.markercluster" target="_blank" title="marker cluster">With the Marker Cluster Plugin</a><br>
-              <a href="https://www.arcgis.com/" target="_blank" title="ArcGIS Online">Maps tiles from ArcGIS Online</a><br>
-              <a href="https://www.geonames.org/" target="_blank" title="Geonames">Using data from geonames APIs</a><br>
-              <a href="http://geodb-cities-api.wirefreethought.com/" target="_blank" title="geoDB cities API">from GeoDB Cities API</a><br>
-              <a href="https://api-ninjas.com/api/airports" target="_blank" title="API Ninjas">from API Ninjas</a><br>
-              <a href="https://rapidapi.com" target="_blank" title="Rapid API">from Rapid API</a><br>
-              <a href="https://newsapi.org/" target="_blank" title="News API">from News API</a><br>
-              <a href="https://rapidapi.com/principalapis/api/currency-conversion-and-exchange-rates" target="_blank" title="Currency Conversion by Principal APIs">and from Principal APIs</a><br>
-              <a href="https://flagsapi.com/" target="_blank" title="flagsapi">Flag images from flagsapi.com</a><br>
-              <a href="https://www.jqueryscript.net/time-clock/analog-clock-timezone.html" target="_blank" title="htAnalogClock">Clock from htAnalogClock by dexise</a><br>
-              <a href="https://www.flaticon.com/free-icons/earth" target="_blank" title="earth icons">Earth icons created by Freepik - Flaticon</a>
-            </div>
-            <div class="modal-footer">
               <button type="button" class="btn btn-outline-success btn-sm" data-bs-dismiss="modal">Close</button>
             </div>
           </div>

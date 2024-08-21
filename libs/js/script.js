@@ -49,7 +49,12 @@ let currencyListPopulated = false;
 const handlePOSTError = () => {
     $('#loader').hide();
     console.log('POST request not fulfilled');
+}
+
+handleModalError = () => {
+    console.log('POST request not fulfilled');
     $('.error-overlay').show();
+    loadingComplete();
 }
 
 const loadingComplete = () => {
@@ -90,7 +95,7 @@ const baseLayers = {
 const defaultCountryStyle = (feature) => {
     return {
         fillColor: '#14A44D',
-        weight: 5,
+        weight: 4,
         color: '#231651',
         dashArray: '',
         fillOpacity: 0.5
@@ -188,7 +193,7 @@ const getCountry = async (countryCode) => {
             if (result.status.name == "ok") {
                 layer = result.data;
             } else {
-                console.log('error');
+                handlePOSTError();
             }
     
         },
@@ -349,7 +354,23 @@ const onEachFeature = (feature, layer) => {
 ///////////////////////////////////////////////////////////////////////////
 
 //Initilising custom control feature
-const countryInfo = L.control({position: 'bottomleft'});
+const countryInfo = L.control();
+//checks where to put the country info screen based on screen height
+const checkInfoPosition = () => {
+    if (window.matchMedia('(max-height: 480px)').matches) {
+        countryInfo.setPosition('bottomright');
+    } else {
+        countryInfo.setPosition('bottomleft');
+    }
+}
+checkInfoPosition();
+
+
+//check on resize
+$(window).resize(() => {
+    checkInfoPosition();
+    countryInfo.update(selectedCountry.properties);
+});
 
 countryInfo.onAdd = function (map) {
     this._div = L.DomUtil.create('div', 'country-info');
@@ -366,7 +387,7 @@ countryInfo.update = function (props) {
     } = props;
 
     //dynamic element creation
-    this._div.innerHTML = '<div id="country-info-id"><i id="more-info" class="fa-solid fa-angle-up text-muted"></i><br><img src=https://flagsapi.com/' + iso_a2 + '/shiny/64.png>'
+    this._div.innerHTML = '<div id="country-info-id"><i id="more-info" class="fa-solid fa-angle-up text-muted"></i><i id="close-more-info" class="fa-solid fa-angle-down text-muted"></i><br><img src=https://flagsapi.com/' + iso_a2 + '/shiny/64.png>'
         + '<h4>' + iso_a2 + '</h4></div><br>'
         + '<table class="table extra-info"><tr><th class="text-start">Continent</th><td class="text-end">' + continent + '</td></tr>'
         + '<tr><th class="text-start">Capital</th><td class="text-end">' + capital + '</td></tr>'
@@ -410,7 +431,7 @@ const getProps = async (layer) => {
                 //adds currency code for currency feature
                 props.currencyCode = currencyCode;
             } else {
-                console.log('error');
+                handlePOSTError();
             }
         },
         error: function(jqXHR, textStatus, errorThrown) {
@@ -421,17 +442,50 @@ const getProps = async (layer) => {
     return props;
 }
 
-//Toggle detailed info by clicking on the info box
-$('#map').on('mouseenter', '.country-info', () => {
+const hideExtraInfo = () => {
+    $('.extra-info').hide();
+    $('#more-info').show();
+    $('#close-more-info').hide();
+}
+
+const showExtraInfo = () => {
     $('.extra-info').show();
     $('#more-info').hide();
+}
+
+let extraInfo = false;
+
+//Toggle detailed info by clicking on the info box
+$('#map').on('mouseenter', '.country-info', () => {
+    if (window.matchMedia('(min-width: 769px)').matches) {
+        showExtraInfo();
+    }
 });
 
 $('#map').on('mouseleave', '.country-info', () => {
-    $('.extra-info').hide();
-    $('#more-info').show();
+    if (window.matchMedia('(min-width: 769px)').matches) {
+        hideExtraInfo();
+    }
 });
 
+$('#map').on('click', '.country-info', () => {
+    if (window.matchMedia('(max-width: 768px)').matches) {
+        hideExtraInfo();
+    }
+});
+
+$('#map').on('click', '.country-info', () => {
+    if (window.matchMedia('(max-width: 768px)').matches) {
+        if (extraInfo) {
+            hideExtraInfo();
+            extraInfo = false;
+        } else {
+            showExtraInfo();
+            $('#close-more-info').show();
+            extraInfo = true;
+        }
+    }
+});
 
 /////////////////////////////////////////////////////////////////////////////
 // ---MAP MARKERS FEATURE --- //////////////////////////////////////////////
@@ -480,7 +534,7 @@ const getCities = async (layer) => {
                     layerData.capitalLng = -77.03637;
                 }
             } else {
-                console.log('error');
+                handlePOSTError();
             }
 
         },
@@ -515,7 +569,7 @@ const getAirports = async (layer) => {
                 });
 
             } else {
-                console.log('error');
+                handlePOSTError();
             }
         
         },
@@ -542,48 +596,71 @@ $('#news-modal').on('hidden.bs.modal', () => {
     handleModalClose();
 });
 
+const hideNews = () => {
+    $('#news-1-headline').html('&nbsp;');
+    $('#news-1-link').attr('src', '');
+    $('#news-1-time').html('&nbsp;')
+    $('#news-1-img').attr('src', '');
+    $('#news-2-headline').html('&nbsp;');
+    $('#news-2-link').attr('src', '');
+    $('#news-2-time').html('&nbsp;')
+    $('#news-2-img').attr('src', '');
+    $('#news-3-headline').html('&nbsp;');
+    $('#news-3-link').attr('src', '');
+    $('#news-3-time').html('&nbsp;')
+    $('#news-3-img').attr('src', '');
+}
+
 //Ajax call and modal population
-const getNews = (layer) => {
-    const layerData = layer.properties;
+const getNews = async (layer) => {
+    const { iso_a2 } = layer.properties;
+    targetCountry = iso_a2.toLowerCase();
     $('news-body').html('<p>Loading Local News...</p>');
     $.ajax({
         url: "./libs/php/news.php",
         type: 'POST',
         dataType: 'json',
         data: {
-            country: layerData.iso_a2
+            country: targetCountry,
         },
         success: function(result) {
 
             console.log(JSON.stringify(result));
             
             if (result.status.name == "ok") {
-                $('#news-body').html('');
-                const articles = result.data.articles;
-                if (articles[0]) {
-                    articles.forEach((article) => {
-                        $('#news-body').append(
-                            '<tr><th colspan="2"><a class="news responsive-modal-text" href="'
-                            + article.url + '" target="blank"><i class="fa-regular fa-newspaper fa-xl icon-green-custom"></i>  '
-                            + article.title + '</a></th></tr>'
-                            + '<tr class="table-bottom-border-on"><td class="responsive-modal-text text-center">Source: '
-                            + article.source.name + '</td>'
-                            + '<td class="responsive-modal-text text-center">Date: '
-                            + new Date(article.publishedAt).toDateString() + '</td></tr>'
-                        );
-                    });
-                    loadingComplete();
-                } else {
-                    $('#news-body').html('<tr><th>No Local News Found</th></tr>');
-                }
-                
+                const { 
+                    news1,
+                    news2,
+                    news3,
+                } = result.data;
+
+                news1.time = new Date(news1.rawTime);
+                news2.time = new Date(news2.rawTime);
+                news3.time = new Date(news3.rawTime);
+                $('#news-title').html('Top Headlines');
+                $('#news-1-img').attr('src', news1.img);
+                $('#news-1-headline').html(news1.headline);
+                $('#news-1-headline').attr('href', news1.link);
+                $('#news-1-time').html(news1.time);
+                $('#news-2-img').attr('src', news2.img);
+                $('#news-2-headline').html(news2.headline);
+                $('#news-2-headline').attr('href', news2.link);
+                $('#news-2-time').html(news2.time)
+                $('#news-3-img').attr('src', news3.img);
+                $('#news-3-headline').html(news3.headline);
+                $('#news-3-headline').attr('href', news3.link);
+                $('#news-3-time').html(news3.time);
+                loadingComplete();
             } else {
-                console.log('error');
+                $('#news-title').html('No Local News Found');
+                hideNews();
+                handleModalError();
             }
         },
         error: function(jqXHR, textStatus, errorThrown) {
-            $('#news-body').html('<tr><th>No Local News Found</th></tr>');
-            handlePOSTError();
+            $('#news-title').html('No Local News Found');
+            hideNews();
+            handleModalError();
         }
     });
 }
@@ -645,14 +722,13 @@ const getTime = (layer) => {
                 showTime();
                 loadingComplete();
             } else {
-                console.log('error');
-                loadingComplete();
+                $('#time-title').html('Timezone not found.');
+                handleModalError();
             }
         },
         error: function(jqXHR, textStatus, errorThrown) {
             $('#time-title').html('Timezone not found.');
-            handlePOSTError();
-            loadingComplete();
+            handleModalError();
         }
     });
 }
@@ -738,13 +814,13 @@ const getWeather = (layer) => {
             } else {
                 $('#weather-title').html('Forecast not Found')
                 hideForecast();
-                handlePOSTError();
+                handleModalError();
             }
         },
         error: function(jqXHR, textStatus, errorThrown) {
             $('#weather-title').html('Forecast not Found')
             hideForecast();
-            handlePOSTError();
+            handleModalError();
         }
     });
 }
@@ -814,12 +890,13 @@ const populateCurrencyList = async () => {
                 $('#currency-from').val(initialCountry.feature.properties.currencyCode);
                 $('#currency-to').val(selectedCountry.feature.properties.currencyCode);
             } else {
-                console.log('error');
+                $('#currency-title').html('Currency code Not found...');
+                handleModalError();
             }
         },
         error: function(jqXHR, textStatus, errorThrown) {
             $('#currency-title').html('Currency code Not found...');
-            handlePOSTError();
+            handleModalError();
         }
     });
 }
@@ -847,13 +924,15 @@ const getExchangeRate = (exFrom, exTo, amount) => {
                 $('#number-to').html(exRate);
                 loadingComplete();
             } else {
-                console.log('error');
+                $('#currency-title').html('Currency code not found');
+                $('#number-to').html('');
+                handleModalError();
             }
         },
         error: function(jqXHR, textStatus, errorThrown) {
             $('#currency-title').html('Currency code not found');
             $('#number-to').html('');
-            handlePOSTError();
+            handleModalError();
         }
     });
 }
@@ -920,10 +999,9 @@ const formatCountry = (country) => {
 //Ajax call and modal population
 const getWiki = (layer) => {
     $('#wiki-title').html('Loading...');
-    $('#wiki-summary').html('');
-    $('#wiki-link').attr('href', 'https://www.wikipedia.org/');
-    const countryRequest = layer.properties.name;
-    const formattedCountry = formatCountry(countryRequest);
+    $('#wiki-summary').html('&nbsp;');
+    const { name } = layer.properties;
+    const formattedCountry = formatCountry(name);
     $.ajax({
         url: "./libs/php/wikipedia.php",
         type: 'POST',
@@ -941,13 +1019,15 @@ const getWiki = (layer) => {
                 $('#wiki-summary').html(summaryWithLink);
                 loadingComplete();
             } else {
-                console.log('error');
+                $('#wiki-title').html('Entry not found');
+                $('#wiki-summary').html('Please go to <a href="https://www.wikipedia.org/">https://www.wikipedia.org/</a> and search manually.');
+                handleModalError();
             }
         },
         error: function(jqXHR, textStatus, errorThrown) {
             $('#wiki-title').html('Entry not found');
             $('#wiki-summary').html('Please go to <a href="https://www.wikipedia.org/">https://www.wikipedia.org/</a> and search manually.');
-            handlePOSTError();
+            handleModalError();
         }
     });
 }

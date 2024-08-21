@@ -69,7 +69,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    z-index: 9999;
+    z-index: 9998;
     overflow: hidden;
     background: #ffffff;
 }
@@ -135,6 +135,11 @@ p.country-info {
     display: none;
 }
 
+#close-more-info {
+    display: none;
+    width: 100%;
+}
+
 /* Country Select Box */
 
 #select-container {
@@ -151,37 +156,15 @@ p.country-info {
     margin: 0 auto;
 }
 
-/* Modals REVIEW**************/
+/* Modals */
 
-
-
-
-
-td, th {
-    padding-top: 2px;
-    padding-bottom: 2px;
-    padding-left: 1px;
-    padding-right: 1px;
-    margin-top: 2px;
+.modal-body {
+    min-height: 160px;
 }
 
-a.news {
-    padding: 0;
-}
-
-.remove-border-bottom {
-    border-bottom: white;
-}
-
-.icon-green-custom {
-    color: rgb(87, 185, 87);
-}
-
-.table-bottom-border-on {
-    border-bottom: solid;
-    border-color: #a6accf;
-    margin: 10px;
-    padding: 10px;
+/* News Modal */
+.news-image-container {
+    height: 160px;
 }
 
 /* Media queries for small screens */
@@ -206,6 +189,7 @@ a.news {
         bottom: 55px;
     }
 
+
 }
 
 @media only screen and (max-width: 320px) {
@@ -213,5 +197,16 @@ a.news {
     div.country-info.leaflet-control {
         bottom: 68px;
     }
+
+}
+
+@media only screen and (max-height: 480px) {
+
+    div.country-info.leaflet-control {
+        left: 0;
+        right: 5px;
+        bottom: 0;
+    }
+
 
 }
