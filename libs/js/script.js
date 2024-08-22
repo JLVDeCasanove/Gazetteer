@@ -695,20 +695,20 @@ const getWeather = (layer) => {
                 $('#weather-today-title').html('TODAY');
                 $('#weather-today-conditions').html(todayForecast.conditions);
                 $('#weather-today-img').attr('src', todayForecast.imgUrl);
-                $('#weather-today-max-temp').html(todayForecast.maxTemp);
-                $('#weather-today-min-temp').html(todayForecast.minTemp);
+                $('#weather-today-max-temp').html(Math.round(todayForecast.maxTemp));
+                $('#weather-today-min-temp').html(Math.round(todayForecast.minTemp));
                 $('#weather-day1-date').html(Date.parse(day1Forecast.date).toString('ddd dS'));
                 $('#weather-day1-img').attr('src', day1Forecast.imgUrl);
                 $('#weather-day1-img').attr('alt', day1Forecast.conditions);
                 $('#weather-day1-img').attr('title', day1Forecast.conditions);
-                $('#weather-day1-max-temp').html(day1Forecast.maxTemp);
-                $('#weather-day1-min-temp').html(day1Forecast.minTemp);
+                $('#weather-day1-max-temp').html(Math.round(day1Forecast.maxTemp));
+                $('#weather-day1-min-temp').html(Math.round(day1Forecast.minTemp));
                 $('#weather-day2-date').html(Date.parse(day2Forecast.date).toString('ddd dS'));
                 $('#weather-day2-img').attr('src', day2Forecast.imgUrl);
                 $('#weather-day2-img').attr('alt', day2Forecast.conditions);
                 $('#weather-day2-img').attr('title', day2Forecast.conditions);
-                $('#weather-day2-max-temp').html(day2Forecast.maxTemp);
-                $('#weather-day2-min-temp').html(day2Forecast.minTemp);
+                $('#weather-day2-max-temp').html(Math.round(day2Forecast.maxTemp));
+                $('#weather-day2-min-temp').html(Math.round(day2Forecast.minTemp));
                 $('#last-updated').html('Last Updated: ' + Date.parse(lastUpdated).toString("HH:mm, dS MMM"));
                 loadingComplete();
             } else {
@@ -731,9 +731,12 @@ const getWeather = (layer) => {
 
 //Button and modal handler
 const currencyBtn = L.easyButton("fa-solid fa-coins fa-xl", (btn, map) => {
-    handleCurrencyButton();
     $("#currency-modal").modal("show");
   });
+
+$('#currency-modal').on('show.bs.modal', () => {
+    handleCurrencyButton();
+})
 
 //On modal close
 $('#currency-modal').on('hidden.bs.modal', () => {
