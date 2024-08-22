@@ -756,6 +756,22 @@ const formatExRate = (targetExTo, rate) => {
     }
 };
 
+const setInitialCurrencies = (defaultExFrom, defaultExTo) => {
+    //if defaults are the same sets currency from to USD or to EUR if currency from is USD
+    if (defaultExFrom === defaultExTo && defaultExFrom !== 'USD') {
+        $('#currency-from').val(defaultExFrom);
+        $('#currency-to').val('USD');
+    } else if (defaultExFrom === defaultExTo && defaultExFrom === 'USD') {
+        $('#currency-from').val(defaultExFrom);
+        $('#currency-to').val('EUR');
+    } else {
+        //sets default currency to exchange from to the initial country set upon page load if no duplication
+        $('#currency-from').val(defaultExFrom);
+        //sets default currency to exchange to to the country currently selected if no duplication
+        $('#currency-to').val(defaultExTo);
+    }
+}
+
 const handleCurrencyButton = async () => {
     const defaultExFrom = initialCountry.properties.currencyCode;
     const defaultExTo = selectedCountry.properties.currencyCode;
@@ -763,10 +779,7 @@ const handleCurrencyButton = async () => {
     if (!currencyListPopulated) {
         await populateCurrencyList();
     } else {
-        //sets default currency to exchange from to the initial country set upon page load.
-        $('#currency-from').val(defaultExFrom);
-        //sets default currency to exchange to to the country currently selected.
-        $('#currency-to').val(defaultExTo);
+        setInitialCurrencies(defaultExFrom, defaultExTo);
     }
     $('#number-from').val(1);
     exFrom = $('#currency-from').val();
@@ -774,11 +787,6 @@ const handleCurrencyButton = async () => {
     //show currency not found if selected country is not in list
     if (!defaultExTo) {
         $('#currency-title').html('Currency code not found');
-        $('#number-to').html('');
-        loadingComplete();
-    //show message if currency codes to and from are equal
-    } else if (exFrom === exTo) {
-        $('#currency-title').html('Please select 2 different currencies to convert');
         $('#number-to').html('');
         loadingComplete();
     } else {
@@ -789,6 +797,8 @@ const handleCurrencyButton = async () => {
 
 //Ajax call for currency list population
 const populateCurrencyList = async () => {
+    const defaultExFrom = initialCountry.properties.currencyCode;
+    const defaultExTo = selectedCountry.properties.currencyCode;
     await $.ajax({
         url: "./libs/php/currency-list.php",
         type: 'POST',
@@ -802,8 +812,7 @@ const populateCurrencyList = async () => {
                     $('#currency-to').append('<option value="' + currency.code + '">' + currency.name + '</option>');
                 })
                 currencyListPopulated = true;
-                $('#currency-from').val(initialCountry.properties.currencyCode);
-                $('#currency-to').val(selectedCountry.properties.currencyCode);
+                setInitialCurrencies(defaultExFrom, defaultExTo);
             } else {
                 $('#currency-title').html('Currency code Not found...');
                 handleModalError();
