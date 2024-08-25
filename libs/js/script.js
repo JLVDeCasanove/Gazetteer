@@ -695,20 +695,20 @@ const getWeather = (layer) => {
                 $('#weather-today-title').html('TODAY');
                 $('#weather-today-conditions').html(todayForecast.conditions);
                 $('#weather-today-img').attr('src', todayForecast.imgUrl);
-                $('#weather-today-max-temp').html(todayForecast.maxTemp);
-                $('#weather-today-min-temp').html(todayForecast.minTemp);
+                $('#weather-today-max-temp').html(Math.round(todayForecast.maxTemp));
+                $('#weather-today-min-temp').html(Math.round(todayForecast.minTemp));
                 $('#weather-day1-date').html(Date.parse(day1Forecast.date).toString('ddd dS'));
                 $('#weather-day1-img').attr('src', day1Forecast.imgUrl);
                 $('#weather-day1-img').attr('alt', day1Forecast.conditions);
                 $('#weather-day1-img').attr('title', day1Forecast.conditions);
-                $('#weather-day1-max-temp').html(day1Forecast.maxTemp);
-                $('#weather-day1-min-temp').html(day1Forecast.minTemp);
+                $('#weather-day1-max-temp').html(Math.round(day1Forecast.maxTemp));
+                $('#weather-day1-min-temp').html(Math.round(day1Forecast.minTemp));
                 $('#weather-day2-date').html(Date.parse(day2Forecast.date).toString('ddd dS'));
                 $('#weather-day2-img').attr('src', day2Forecast.imgUrl);
                 $('#weather-day2-img').attr('alt', day2Forecast.conditions);
                 $('#weather-day2-img').attr('title', day2Forecast.conditions);
-                $('#weather-day2-max-temp').html(day2Forecast.maxTemp);
-                $('#weather-day2-min-temp').html(day2Forecast.minTemp);
+                $('#weather-day2-max-temp').html(Math.round(day2Forecast.maxTemp));
+                $('#weather-day2-min-temp').html(Math.round(day2Forecast.minTemp));
                 $('#last-updated').html('Last Updated: ' + Date.parse(lastUpdated).toString("HH:mm, dS MMM"));
                 loadingComplete();
             } else {
@@ -731,9 +731,12 @@ const getWeather = (layer) => {
 
 //Button and modal handler
 const currencyBtn = L.easyButton("fa-solid fa-coins fa-xl", (btn, map) => {
-    handleCurrencyButton();
     $("#currency-modal").modal("show");
   });
+
+$('#currency-modal').on('show.bs.modal', () => {
+    handleCurrencyButton();
+})
 
 //On modal close
 $('#currency-modal').on('hidden.bs.modal', () => {
@@ -753,6 +756,22 @@ const formatExRate = (targetExTo, rate) => {
     }
 };
 
+const setInitialCurrencies = (defaultExFrom, defaultExTo) => {
+    //if defaults are the same sets currency from to USD or to EUR if currency from is USD
+    if (defaultExFrom === defaultExTo && defaultExFrom !== 'USD') {
+        $('#currency-from').val(defaultExFrom);
+        $('#currency-to').val('USD');
+    } else if (defaultExFrom === defaultExTo && defaultExFrom === 'USD') {
+        $('#currency-from').val(defaultExFrom);
+        $('#currency-to').val('EUR');
+    } else {
+        //sets default currency to exchange from to the initial country set upon page load if no duplication
+        $('#currency-from').val(defaultExFrom);
+        //sets default currency to exchange to to the country currently selected if no duplication
+        $('#currency-to').val(defaultExTo);
+    }
+}
+
 const handleCurrencyButton = async () => {
     const defaultExFrom = initialCountry.properties.currencyCode;
     const defaultExTo = selectedCountry.properties.currencyCode;
@@ -760,10 +779,7 @@ const handleCurrencyButton = async () => {
     if (!currencyListPopulated) {
         await populateCurrencyList();
     } else {
-        //sets default currency to exchange from to the initial country set upon page load.
-        $('#currency-from').val(defaultExFrom);
-        //sets default currency to exchange to to the country currently selected.
-        $('#currency-to').val(defaultExTo);
+        setInitialCurrencies(defaultExFrom, defaultExTo);
     }
     $('#number-from').val(1);
     exFrom = $('#currency-from').val();
@@ -771,11 +787,6 @@ const handleCurrencyButton = async () => {
     //show currency not found if selected country is not in list
     if (!defaultExTo) {
         $('#currency-title').html('Currency code not found');
-        $('#number-to').html('');
-        loadingComplete();
-    //show message if currency codes to and from are equal
-    } else if (exFrom === exTo) {
-        $('#currency-title').html('Please select 2 different currencies to convert');
         $('#number-to').html('');
         loadingComplete();
     } else {
@@ -786,6 +797,8 @@ const handleCurrencyButton = async () => {
 
 //Ajax call for currency list population
 const populateCurrencyList = async () => {
+    const defaultExFrom = initialCountry.properties.currencyCode;
+    const defaultExTo = selectedCountry.properties.currencyCode;
     await $.ajax({
         url: "./libs/php/currency-list.php",
         type: 'POST',
@@ -799,8 +812,7 @@ const populateCurrencyList = async () => {
                     $('#currency-to').append('<option value="' + currency.code + '">' + currency.name + '</option>');
                 })
                 currencyListPopulated = true;
-                $('#currency-from').val(initialCountry.properties.currencyCode);
-                $('#currency-to').val(selectedCountry.properties.currencyCode);
+                setInitialCurrencies(defaultExFrom, defaultExTo);
             } else {
                 $('#currency-title').html('Currency code Not found...');
                 handleModalError();

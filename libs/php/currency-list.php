@@ -59,8 +59,10 @@
 	$currencyArr = [];
 
 	foreach ($decode['symbols'] as $key => $value) {
-		array_push($currencyArr, ['code' => $key, 'name' => $value]);
+		array_push($currencyArr, ['code' => $key, 'name' => $key . ' - ' . $value]);
 	}
+
+	sort($currencyArr);
 
 	$output['status']['code'] = "200";
 	$output['status']['name'] = "ok";
