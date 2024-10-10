@@ -697,13 +697,13 @@ const getWeather = (layer) => {
                 $('#weather-today-img').attr('src', todayForecast.imgUrl);
                 $('#weather-today-max-temp').html(Math.round(todayForecast.maxTemp));
                 $('#weather-today-min-temp').html(Math.round(todayForecast.minTemp));
-                $('#weather-day1-date').html(Date.parse(day1Forecast.date).toString('ddd dS'));
+                $('#weather-day1-date').html(formatDate(day1Forecast.date));
                 $('#weather-day1-img').attr('src', day1Forecast.imgUrl);
                 $('#weather-day1-img').attr('alt', day1Forecast.conditions);
                 $('#weather-day1-img').attr('title', day1Forecast.conditions);
                 $('#weather-day1-max-temp').html(Math.round(day1Forecast.maxTemp));
                 $('#weather-day1-min-temp').html(Math.round(day1Forecast.minTemp));
-                $('#weather-day2-date').html(Date.parse(day2Forecast.date).toString('ddd dS'));
+                $('#weather-day2-date').html(formatDate(day2Forecast.date));
                 $('#weather-day2-img').attr('src', day2Forecast.imgUrl);
                 $('#weather-day2-img').attr('alt', day2Forecast.conditions);
                 $('#weather-day2-img').attr('title', day2Forecast.conditions);
@@ -724,6 +724,15 @@ const getWeather = (layer) => {
         }
     });
 }
+
+const formatDate = (inputDate) => {
+    const date = new Date(inputDate);
+    const dateString = date.toLocaleDateString('en-GB', {
+        weekday: 'short',
+        day: 'numeric'
+    });
+    return dateString;
+};
 
 /////////////////////////////////////////////////////////////////////////////
 // ---CURRENCY EXCHANGE FEATURE --- ////////////////////////////////////////
